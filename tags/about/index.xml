@@ -2,21 +2,21 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>About on VULNIX</title>
-    <link>/tags/about/</link>
+    <link>https://theupbeat.github.io/tags/about/</link>
     <description>Recent content in About on VULNIX</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Wed, 17 Jun 2020 19:33:42 +0530</lastBuildDate>
     
-	<atom:link href="/tags/about/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://theupbeat.github.io/tags/about/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>About</title>
-      <link>/about/</link>
+      <link>https://theupbeat.github.io/about/</link>
       <pubDate>Wed, 17 Jun 2020 19:33:42 +0530</pubDate>
       
-      <guid>/about/</guid>
+      <guid>https://theupbeat.github.io/about/</guid>
       <description>My name is TheUpBeat and this site is where I will be posting my thoughts, notes, and tutorials as I learn it myself, about different technical concepts which involves Open Source, Linux, System Administration, Security, etc.
 Please excuse me (or) forgive me if there are any shortcomings or mistakes in the website. I write the posts as I learn, so if there is any problem or any mistake in the website, ping me up @: TheUpBeat@protonmail.</description>
     </item>

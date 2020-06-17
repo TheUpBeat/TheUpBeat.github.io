@@ -2,21 +2,21 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Linux on VULNIX</title>
-    <link>/tags/linux/</link>
+    <link>https://theupbeat.github.io/tags/linux/</link>
     <description>Recent content in Linux on VULNIX</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Wed, 17 Jun 2020 10:30:00 +0530</lastBuildDate>
     
-	<atom:link href="/tags/linux/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://theupbeat.github.io/tags/linux/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>control groups (cgroups) - The Limiter Part I</title>
-      <link>/posts/cgroups_1/</link>
+      <link>https://theupbeat.github.io/posts/cgroups_1/</link>
       <pubDate>Wed, 17 Jun 2020 10:30:00 +0530</pubDate>
       
-      <guid>/posts/cgroups_1/</guid>
+      <guid>https://theupbeat.github.io/posts/cgroups_1/</guid>
       <description>The Linux Kernel is full of mysteries and tools which can help boost the performance, improve the efficiency and at the same time break the system. This series mainly focuses on the &amp;ldquo;cgroups&amp;rdquo; feature in the Linux Kernel. There will be a series of posts explaining, demonstrating, and tweaking it.
 Part I - Introduction What is cgroups cgroups is a feature available to the end user which is present in Linux Kernel.</description>
     </item>
