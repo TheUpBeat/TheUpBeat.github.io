@@ -1,0 +1,122 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>Posts on VULNIX</title>
+        <link>/posts/</link>
+        <description>Recent content in Posts on VULNIX</description>
+        <generator>Hugo -- gohugo.io</generator>
+        <language>en-us</language>
+        <lastBuildDate>Wed, 17 Jun 2020 10:30:00 +0530</lastBuildDate>
+        <atom:link href="/posts/index.xml" rel="self" type="application/rss+xml" />
+        
+        <item>
+            <title>control groups (cgroups) - The Limiter Part I</title>
+            <link>/posts/cgroups_1/</link>
+            <pubDate>Wed, 17 Jun 2020 10:30:00 +0530</pubDate>
+            
+            <guid>/posts/cgroups_1/</guid>
+            <description>The Linux Kernel is full of mysteries and tools which can help boost the performance, improve the efficiency and at the same time break the system. This series mainly focuses on the &amp;ldquo;cgroups&amp;rdquo; feature in the Linux Kernel. There will be a series of posts explaining, demonstrating, and tweaking it.
+Part I - Introduction What is cgroups cgroups is a feature available to the end user which is present in Linux Kernel.</description>
+            <content type="html"><![CDATA[<p>The Linux Kernel is full of mysteries and tools which can help boost the performance, improve the efficiency and at the same time break the system. This series mainly focuses on the &ldquo;<strong>cgroups</strong>&rdquo; feature in the Linux Kernel. There will be a series of posts explaining, demonstrating, and tweaking it.</p>
+<h2 id="part-i---introduction">Part I - Introduction</h2>
+<h3 id="what-is-cgroups">What is cgroups</h3>
+<p><strong>cgroups</strong> is a feature available to the end user which is present in Linux Kernel. It can be used in limiting, prioritizing, accounting and controlling the resources to a specific group of processes/tasks.</p>
+<p>A resource may be CPU time, Memory, Network bandwidth, etc. For example, if a browser (or) any application uses more than 25% of the memory, it can be limited to use not more than 15% with the help of cgroups.</p>
+<p>As the name says, it is a group of processes aggregated/partitioned. The cgroups is organised hierarchically, which makes the child inherit the parent&rsquo;s limits/configuration.</p>
+<h3 id="the-model">The Model</h3>
+<p>The hierarchy is implemented everywhere in the Linux Kernel. The hierarchy is set of cgroups arranged in tree. Take <strong>init process</strong>, it is the first thing that starts after the boot, this makes it the parent of all the other processes. The Linux Model is a single hierarchy/tree.</p>
+<p>Whereas the cgroup model can have different groups of hierarchies, making it an unconnected trees of tasks. Multiple hierarchy means that for each subsystem there exist a cgroup model.</p>
+<h3 id="development">Development</h3>
+<p>It seems weird and interesting that the idea of cgroups was first coined by Google, mainly the Devs - Paul Menage and Rohit Seth. It was first implemented in the year of 2006 and named as &ldquo;<a href="https://lwn.net/Articles/236038/">Process Containers</a>&rdquo;. Later on the it has been to changed to &ldquo;control groups&rdquo; due to the name having containers which caused a lot of confusions.</p>
+<p>The control groups were first implemented in Linux Kernel version 2.6.24 (released in 2008). Continuing from there on, the developers have been adding features and supporting it till date. The features include kernfs, unified hierarchy, firewalling, etc.</p>
+<p>Overall there were two versions of cgroups. The <a href="https://man7.org/linux/man-pages/man7/cgroups.7.html#CGROUPS_VERSION_1">v1</a> which was developed by the devs from google and the <a href="https://man7.org/linux/man-pages/man7/cgroups.7.html#CGROUPS_VERSION_2">v2</a> was developed by Tejun Heo after acquiring it. The v2 was first implemented in Linux Kernel version 4.5 (released in 2016).</p>
+<h3 id="why-do-we-need-it">Why do we need it?</h3>
+<p>There were many attempts to create a system that can help in tracking the resources. But they lack in grouping/partitioning of processes which lead to forking or creating child processes in the same group as their parent.</p>
+<p>The cgroups provide the required mechanisms to implement this efficiently. cgroups has also provided multiple hierarchy support, which would help in dividing different tasks for different subsystems. This enables parallel hierarchy that helps in handling complex combinations of processes, without which would to lead to combinations of tasks in the same cgroup.</p>
+<h4 id="example-taken-from-5httpswwwkernelorgdocdocumentationcgroup-v1cgroupstxt">Example (Taken from <a href="https://www.kernel.org/doc/Documentation/cgroup-v1/cgroups.txt">5</a>)</h4>
+<p><img src="/img/1.png" alt="example"></p>
+<p>Consider the above hierarchy which illustrate the use of multiple hierarchy in a university where various users like professors, students and system use the same server. The usage is divided in the following way</p>
+<p>Memory:</p>
+<ul>
+<li>Professors - 45%</li>
+<li>Students - 30%</li>
+<li>System - 25%</li>
+</ul>
+<p>Disk:</p>
+<ul>
+<li>Professors - 45%</li>
+<li>Students - 30%</li>
+<li>System - 25%</li>
+</ul>
+<p>Network:</p>
+<ul>
+<li>WWW Browsing - 25%</li>
+<li>Network File System - 55%</li>
+<li>Others - 20%</li>
+</ul>
+<p>When we use multiple hierarchy, the tasks can be classified differently for different resources, like allocating resource subsystems into different hierarchies, we can easily modify the system to work differently depending on who is using.</p>
+<p>When we only use a single hierarchy, the admin needs to create a separate cgroup for every specific application used and needs to allocate the resources. Single hierarchy also makes it hard to provide enhanced privileges to a user.</p>
+<h3 id="alternative">Alternative</h3>
+<p>There are three different system calls that can be used to limit the resources to a specific process/tasks.</p>
+<ul>
+<li><code>getrlimit</code></li>
+<li><code>setrlimit</code></li>
+<li><code>prlimit</code></li>
+</ul>
+<p>Calls to the <code>getrlimit</code> and <code>setrlimit</code> system allow a process to read and set limitations on the system resources it may consume. The <code>prlimit</code> allows the resource limits of a process specified by PID to be set and read.</p>
+<p>For more understanding and usage, check the man pages:</p>
+<ul>
+<li><a href="https://man7.org/linux/man-pages/man2/getrlimit.2.html">getrlimit</a></li>
+<li><a href="https://linux.die.net/man/2/setrlimit">setrlimit</a></li>
+<li><a href="https://www.man7.org/linux/man-pages/man1/prlimit.1.html">prlimit</a></li>
+</ul>
+<h3 id="different-cgroups">Different cgroups</h3>
+<p>There are 12 different types of cgroups in Linux:</p>
+<ul>
+<li><code>blkio</code> - Block I/O (or) set limits to read/write from/to.</li>
+<li><code>cpu</code> - Control CPU time using CFS (Completely Fair Scheduler).</li>
+<li><code>cpuacct</code> - Reports are generated regarding the usage of CPU resources by a process.</li>
+<li><code>cpuset</code> - Assings inividual CPUs and memory nodes to tasks (in a single cgroup).</li>
+<li><code>devices</code> - Allow/Deny access to devices.</li>
+<li><code>freezer</code> - Suspends/Resumes a process.</li>
+<li><code>hugetlb</code> - Allows/Denys the use of huge pages for a specific group.</li>
+<li><code>memory</code> - Set limits on usage for memory for a task/process.</li>
+<li><code>net_cls</code> - Allows to note/mark specific packets from a group.</li>
+<li><code>net_prio</code> - Set the priority dynamically to the network traffic.</li>
+<li><code>perf_event</code> - Allows access to a perf events to a group.</li>
+<li><code>pids</code> -  To limit the number of process/tasks from being forked for cloned when a certain limit is reached.</li>
+</ul>
+<h3 id="enabled-cgroups">Enabled cgroups</h3>
+<p>To see the what/which cgroups are present in your system:</p>
+<pre><code>cat /proc/cgroups
+</code></pre><p><img src="/img/2.png" alt="cat /proc/cgroups"></p>
+<!-- raw HTML omitted -->
+<p>You can also see via sysfs:</p>
+<pre><code>ls -l /sys/fs/cgroup/
+</code></pre><p><img src="/img/3.png" alt="ls -l /sys/fs/cgroup/"></p>
+<p>To get cgroups for a specific PID, we can use <strong>cat /proc/[PID]/cgroup/</strong>.</p>
+<p>To get the PIDs use:</p>
+<pre><code>ps -d
+</code></pre><p><img src="/img/4.png" alt="ps -d"></p>
+<p>I will be showing the cgroups of the ZSH shell (PID: 72980)</p>
+<pre><code>cat /proc/72980/cgroup
+</code></pre><p><img src="/img/5.png" alt="cat /proc/72980/cgroup"></p>
+<h3 id="continued">Continued</h3>
+<p>This is a series that explains the cgroups. The following posts will be demonstrating and tweaking the cgroups.</p>
+<h3 id="resources">Resources</h3>
+<ol>
+<li><a href="https://en.wikipedia.org/wiki/Cgroups#cite_ref-4">https://en.wikipedia.org/wiki/Cgroups#cite_ref-4</a></li>
+<li><a href="https://wiki.archlinux.org/index.php/cgroups">https://wiki.archlinux.org/index.php/cgroups</a></li>
+<li><a href="https://www.grant.pizza/blog/understanding-cgroups/#practically-using-cgroups">https://www.grant.pizza/blog/understanding-cgroups/#practically-using-cgroups</a></li>
+<li><a href="https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/performance_tuning_guide/chap-red_hat_enterprise_linux-performance_tuning_guide-overview">https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/performance_tuning_guide/chap-red_hat_enterprise_linux-performance_tuning_guide-overview</a></li>
+<li><a href="https://www.kernel.org/doc/Documentation/cgroup-v1/cgroups.txt">https://www.kernel.org/doc/Documentation/cgroup-v1/cgroups.txt</a></li>
+<li><a href="https://www.kernel.org/doc/Documentation/cgroup-v1/">https://www.kernel.org/doc/Documentation/cgroup-v1/</a></li>
+<li><a href="https://www.kernel.org/doc/Documentation/cgroup-v2.txt">https://www.kernel.org/doc/Documentation/cgroup-v2.txt</a></li>
+<li><a href="https://man7.org/linux/man-pages/man7/cgroups.7.html#CGROUPS_VERSION_1">https://man7.org/linux/man-pages/man7/cgroups.7.html#CGROUPS_VERSION_1</a></li>
+<li><a href="https://man7.org/linux/man-pages/man7/cgroups.7.html#CGROUPS_VERSION_2">https://man7.org/linux/man-pages/man7/cgroups.7.html#CGROUPS_VERSION_2</a></li>
+<li><a href="https://0xax.gitbooks.io/linux-insides/content/Cgroups/linux-cgroups-1.html">https://0xax.gitbooks.io/linux-insides/content/Cgroups/linux-cgroups-1.html</a></li>
+</ol>
+]]></content>
+        </item>
+        
+    </channel>
+</rss>

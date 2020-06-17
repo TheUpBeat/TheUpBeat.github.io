@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="author" content="TheUpBeat ">
+<meta name="description" content="The Linux Kernel is full of mysteries and tools which can help boost the performance, improve the efficiency and at the same time break the system. This series mainly focuses on the &amp;ldquo;cgroups&amp;rdquo; feature in the Linux Kernel. There will be a series of posts explaining, demonstrating, and tweaking it.
+Part I - Introduction What is cgroups cgroups is a feature available to the end user which is present in Linux Kernel." />
+<meta name="keywords" content=", Linux, Security, Containers" />
+<meta name="robots" content="noodp" />
+<meta name="theme-color" content="" />
+<link rel="canonical" href="/posts/cgroups_1/" />
+
+
+    <title>
+        
+            control groups (cgroups) - The Limiter Part I :: VULNIX 
+        
+    </title>
+
+
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.2.1/css/flag-icon.min.css" rel="stylesheet"
+    type="text/css">
+
+
+
+<link rel="stylesheet" href="/main.dede02da9537a98158079c023e83573e18127834838ef08172acce888341a797.css">
+
+
+
+
+ <link rel="shortcut icon" href="/favicon.ico?v=kPP08pKEXB">
+  <link rel="icon" type="image/png" href="/favicon-32x32.png?v=kPP08pKEXB" sizes="32x32">
+  <link rel="icon" type="image/png" href="/favicon-96x96.png?v=kPP08pKEXB" sizes="96x96">
+  <link rel="icon" type="image/png" href="/favicon-194x194.png?v=kPP08pKEXB" sizes="194x194">
+  
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="icon" type="image/png" href="/android-chrome-192x192.png?v=kPP08pKEXB" sizes="192x192">
+  
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="RCC Rick Cogley Central">
+  <link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png?v=kPP08pKEXB">
+  <link rel="apple-touch-icon" sizes="60x60" href="/apple-touch-icon-60x60.png?v=kPP08pKEXB">
+  <link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png?v=kPP08pKEXB">
+  <link rel="apple-touch-icon" sizes="76x76" href="/apple-touch-icon-76x76.png?v=kPP08pKEXB">
+  <link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png?v=kPP08pKEXB">
+  <link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon-120x120.png?v=kPP08pKEXB">
+  <link rel="apple-touch-icon" sizes="144x144" href="/apple-touch-icon-144x144.png?v=kPP08pKEXB">
+  <link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152x152.png?v=kPP08pKEXB">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180x180.png?v=kPP08pKEXB">
+  
+  <link rel="icon" type="image/png" href="/favicon-16x16.png?v=kPP08pKEXB" sizes="16x16">
+  <link rel="manifest" href="/manifest.json?v=kPP08pKEXB">
+  <link rel="mask-icon" href="/safari-pinned-tab.svg?v=kPP08pKEXB" color="#5bbad5">
+  <meta name="msapplication-TileColor" content="#2b5797">
+  <meta name="msapplication-TileImage" content="/mstile-144x144.png?v=kPP08pKEXB">
+  <meta name="theme-color" content="#93278f">
+
+
+
+
+
+
+
+    </head>
+
+    <body class="dark-theme">
+        <div class="container">
+            <header class="header">
+    <span class="header__inner">
+        <a href="/" style="text-decoration: none;">
+    <div class="logo">
+        
+            <span class="logo__mark">></span>
+            <span class="logo__text">$ cd /home/</span>
+            <span class="logo__cursor" style=
+                  "
+                   
+                   ">
+            </span>
+        
+    </div>
+</a>
+
+
+        <span class="header__right">
+            
+                <nav class="menu">
+    <ul class="menu__inner"><li><a href="/about">About</a></li><li><a href="/posts/">Posts</a></li>
+    </ul>
+</nav>
+
+                <span class="menu-trigger">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+                    </svg>
+                </span>
+            
+
+            <span class="theme-toggle unselectable"><svg class="theme-toggler" width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M22 41C32.4934 41 41 32.4934 41 22C41 11.5066 32.4934 3 22
+  3C11.5066 3 3 11.5066 3 22C3 32.4934 11.5066 41 22 41ZM7 22C7
+  13.7157 13.7157 7 22 7V37C13.7157 37 7 30.2843 7 22Z"/>
+</svg>
+</span>
+        </span>
+    </span>
+</header>
+
+
+
+
+            <div class="content">
+                
+    <main class="post">
+
+        <div class="post-info">
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-clock"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>5 minutes
+
+            
+
+            </p>
+        </div>
+
+        <article>
+            <h1 class="post-title">
+                <a href="/posts/cgroups_1/">control groups (cgroups) - The Limiter Part I</a>
+            </h1>
+
+            
+
+            <div class="post-content">
+                <p>The Linux Kernel is full of mysteries and tools which can help boost the performance, improve the efficiency and at the same time break the system. This series mainly focuses on the &ldquo;<strong>cgroups</strong>&rdquo; feature in the Linux Kernel. There will be a series of posts explaining, demonstrating, and tweaking it.</p>
+<h2 id="part-i---introduction">Part I - Introduction</h2>
+<h3 id="what-is-cgroups">What is cgroups</h3>
+<p><strong>cgroups</strong> is a feature available to the end user which is present in Linux Kernel. It can be used in limiting, prioritizing, accounting and controlling the resources to a specific group of processes/tasks.</p>
+<p>A resource may be CPU time, Memory, Network bandwidth, etc. For example, if a browser (or) any application uses more than 25% of the memory, it can be limited to use not more than 15% with the help of cgroups.</p>
+<p>As the name says, it is a group of processes aggregated/partitioned. The cgroups is organised hierarchically, which makes the child inherit the parent&rsquo;s limits/configuration.</p>
+<h3 id="the-model">The Model</h3>
+<p>The hierarchy is implemented everywhere in the Linux Kernel. The hierarchy is set of cgroups arranged in tree. Take <strong>init process</strong>, it is the first thing that starts after the boot, this makes it the parent of all the other processes. The Linux Model is a single hierarchy/tree.</p>
+<p>Whereas the cgroup model can have different groups of hierarchies, making it an unconnected trees of tasks. Multiple hierarchy means that for each subsystem there exist a cgroup model.</p>
+<h3 id="development">Development</h3>
+<p>It seems weird and interesting that the idea of cgroups was first coined by Google, mainly the Devs - Paul Menage and Rohit Seth. It was first implemented in the year of 2006 and named as &ldquo;<a href="https://lwn.net/Articles/236038/">Process Containers</a>&rdquo;. Later on the it has been to changed to &ldquo;control groups&rdquo; due to the name having containers which caused a lot of confusions.</p>
+<p>The control groups were first implemented in Linux Kernel version 2.6.24 (released in 2008). Continuing from there on, the developers have been adding features and supporting it till date. The features include kernfs, unified hierarchy, firewalling, etc.</p>
+<p>Overall there were two versions of cgroups. The <a href="https://man7.org/linux/man-pages/man7/cgroups.7.html#CGROUPS_VERSION_1">v1</a> which was developed by the devs from google and the <a href="https://man7.org/linux/man-pages/man7/cgroups.7.html#CGROUPS_VERSION_2">v2</a> was developed by Tejun Heo after acquiring it. The v2 was first implemented in Linux Kernel version 4.5 (released in 2016).</p>
+<h3 id="why-do-we-need-it">Why do we need it?</h3>
+<p>There were many attempts to create a system that can help in tracking the resources. But they lack in grouping/partitioning of processes which lead to forking or creating child processes in the same group as their parent.</p>
+<p>The cgroups provide the required mechanisms to implement this efficiently. cgroups has also provided multiple hierarchy support, which would help in dividing different tasks for different subsystems. This enables parallel hierarchy that helps in handling complex combinations of processes, without which would to lead to combinations of tasks in the same cgroup.</p>
+<h4 id="example-taken-from-5httpswwwkernelorgdocdocumentationcgroup-v1cgroupstxt">Example (Taken from <a href="https://www.kernel.org/doc/Documentation/cgroup-v1/cgroups.txt">5</a>)</h4>
+<p><img src="/img/1.png" alt="example"></p>
+<p>Consider the above hierarchy which illustrate the use of multiple hierarchy in a university where various users like professors, students and system use the same server. The usage is divided in the following way</p>
+<p>Memory:</p>
+<ul>
+<li>Professors - 45%</li>
+<li>Students - 30%</li>
+<li>System - 25%</li>
+</ul>
+<p>Disk:</p>
+<ul>
+<li>Professors - 45%</li>
+<li>Students - 30%</li>
+<li>System - 25%</li>
+</ul>
+<p>Network:</p>
+<ul>
+<li>WWW Browsing - 25%</li>
+<li>Network File System - 55%</li>
+<li>Others - 20%</li>
+</ul>
+<p>When we use multiple hierarchy, the tasks can be classified differently for different resources, like allocating resource subsystems into different hierarchies, we can easily modify the system to work differently depending on who is using.</p>
+<p>When we only use a single hierarchy, the admin needs to create a separate cgroup for every specific application used and needs to allocate the resources. Single hierarchy also makes it hard to provide enhanced privileges to a user.</p>
+<h3 id="alternative">Alternative</h3>
+<p>There are three different system calls that can be used to limit the resources to a specific process/tasks.</p>
+<ul>
+<li><code>getrlimit</code></li>
+<li><code>setrlimit</code></li>
+<li><code>prlimit</code></li>
+</ul>
+<p>Calls to the <code>getrlimit</code> and <code>setrlimit</code> system allow a process to read and set limitations on the system resources it may consume. The <code>prlimit</code> allows the resource limits of a process specified by PID to be set and read.</p>
+<p>For more understanding and usage, check the man pages:</p>
+<ul>
+<li><a href="https://man7.org/linux/man-pages/man2/getrlimit.2.html">getrlimit</a></li>
+<li><a href="https://linux.die.net/man/2/setrlimit">setrlimit</a></li>
+<li><a href="https://www.man7.org/linux/man-pages/man1/prlimit.1.html">prlimit</a></li>
+</ul>
+<h3 id="different-cgroups">Different cgroups</h3>
+<p>There are 12 different types of cgroups in Linux:</p>
+<ul>
+<li><code>blkio</code> - Block I/O (or) set limits to read/write from/to.</li>
+<li><code>cpu</code> - Control CPU time using CFS (Completely Fair Scheduler).</li>
+<li><code>cpuacct</code> - Reports are generated regarding the usage of CPU resources by a process.</li>
+<li><code>cpuset</code> - Assings inividual CPUs and memory nodes to tasks (in a single cgroup).</li>
+<li><code>devices</code> - Allow/Deny access to devices.</li>
+<li><code>freezer</code> - Suspends/Resumes a process.</li>
+<li><code>hugetlb</code> - Allows/Denys the use of huge pages for a specific group.</li>
+<li><code>memory</code> - Set limits on usage for memory for a task/process.</li>
+<li><code>net_cls</code> - Allows to note/mark specific packets from a group.</li>
+<li><code>net_prio</code> - Set the priority dynamically to the network traffic.</li>
+<li><code>perf_event</code> - Allows access to a perf events to a group.</li>
+<li><code>pids</code> -  To limit the number of process/tasks from being forked for cloned when a certain limit is reached.</li>
+</ul>
+<h3 id="enabled-cgroups">Enabled cgroups</h3>
+<p>To see the what/which cgroups are present in your system:</p>
+<pre><code>cat /proc/cgroups
+</code></pre><p><img src="/img/2.png" alt="cat /proc/cgroups"></p>
+<!-- raw HTML omitted -->
+<p>You can also see via sysfs:</p>
+<pre><code>ls -l /sys/fs/cgroup/
+</code></pre><p><img src="/img/3.png" alt="ls -l /sys/fs/cgroup/"></p>
+<p>To get cgroups for a specific PID, we can use <strong>cat /proc/[PID]/cgroup/</strong>.</p>
+<p>To get the PIDs use:</p>
+<pre><code>ps -d
+</code></pre><p><img src="/img/4.png" alt="ps -d"></p>
+<p>I will be showing the cgroups of the ZSH shell (PID: 72980)</p>
+<pre><code>cat /proc/72980/cgroup
+</code></pre><p><img src="/img/5.png" alt="cat /proc/72980/cgroup"></p>
+<h3 id="continued">Continued</h3>
+<p>This is a series that explains the cgroups. The following posts will be demonstrating and tweaking the cgroups.</p>
+<h3 id="resources">Resources</h3>
+<ol>
+<li><a href="https://en.wikipedia.org/wiki/Cgroups#cite_ref-4">https://en.wikipedia.org/wiki/Cgroups#cite_ref-4</a></li>
+<li><a href="https://wiki.archlinux.org/index.php/cgroups">https://wiki.archlinux.org/index.php/cgroups</a></li>
+<li><a href="https://www.grant.pizza/blog/understanding-cgroups/#practically-using-cgroups">https://www.grant.pizza/blog/understanding-cgroups/#practically-using-cgroups</a></li>
+<li><a href="https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/performance_tuning_guide/chap-red_hat_enterprise_linux-performance_tuning_guide-overview">https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/performance_tuning_guide/chap-red_hat_enterprise_linux-performance_tuning_guide-overview</a></li>
+<li><a href="https://www.kernel.org/doc/Documentation/cgroup-v1/cgroups.txt">https://www.kernel.org/doc/Documentation/cgroup-v1/cgroups.txt</a></li>
+<li><a href="https://www.kernel.org/doc/Documentation/cgroup-v1/">https://www.kernel.org/doc/Documentation/cgroup-v1/</a></li>
+<li><a href="https://www.kernel.org/doc/Documentation/cgroup-v2.txt">https://www.kernel.org/doc/Documentation/cgroup-v2.txt</a></li>
+<li><a href="https://man7.org/linux/man-pages/man7/cgroups.7.html#CGROUPS_VERSION_1">https://man7.org/linux/man-pages/man7/cgroups.7.html#CGROUPS_VERSION_1</a></li>
+<li><a href="https://man7.org/linux/man-pages/man7/cgroups.7.html#CGROUPS_VERSION_2">https://man7.org/linux/man-pages/man7/cgroups.7.html#CGROUPS_VERSION_2</a></li>
+<li><a href="https://0xax.gitbooks.io/linux-insides/content/Cgroups/linux-cgroups-1.html">https://0xax.gitbooks.io/linux-insides/content/Cgroups/linux-cgroups-1.html</a></li>
+</ol>
+
+            </div>
+        </article>
+
+        <hr />
+
+        <div class="post-info">
+                <p>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-tag meta-icon"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line></svg><span class="tag"><a href="/tags/linux">Linux</a></span><span class="tag"><a href="/tags/security">Security</a></span><span class="tag"><a href="/tags/containers">Containers</a></span>
+                </p>
+
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>914 Words</p>
+
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2020-06-17 10:30 &#43;0530</p>
+        </div>
+
+        
+    </main>
+
+            </div>
+
+            
+                <footer class="footer">
+    <div class="footer__inner">
+        <div class="footer__content">
+            <span>&copy; 2020</span>
+            
+                <span><a href="/">TheUpBeat</a></span>
+            
+            
+            <span> <a href="/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a></span>
+        </div>
+    </div>
+    <div class="footer__inner">
+        <div class="footer__content">
+            <span>Powered by <a href="http://gohugo.io">Hugo</a></span>
+            <span>Made with &#10084; by <a href="https://github.com/rhazdon">Djordje Atlialp</a></span>
+        </div>
+    </div>
+</footer>
+
+            
+        </div>
+
+        
+
+
+
+
+<script type="text/javascript" src="/bundle.min.dc716e9092c9820b77f96da294d0120aeeb189b5bcea9752309ebea27fd53bbe6b13cffb2aca8ecf32525647ceb7001f76091de4199ac5a3caa432c070247f5b.js" integrity="sha512-3HFukJLJggt3&#43;W2ilNASCu6xibW86pdSMJ6&#43;on/VO75rE8/7KsqOzzJSVkfOtwAfdgkd5BmaxaPKpDLAcCR/Ww=="></script>
+
+
+
+    </body>
+</html>
