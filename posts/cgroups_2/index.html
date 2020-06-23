@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="author" content="TheUpBeat ">
+<meta name="description" content="As explained in the previous post, control groups are used to limit, prioritize, etc., the available resources in a system. In this series of post we will be creating, limiting, assigning tasks to the cgroups.
+ NOTE
+In this whole process I will be using a Arch-based machine with Systemd, specifically Manjaro (please don&amp;rsquo;t come after me).
+ Part II - Demonstrating libcgroup We can control the cgroups using shell commands." />
+<meta name="keywords" content=", Linux, Security, Containers, cgroups" />
+<meta name="robots" content="noodp" />
+<meta name="theme-color" content="" />
+<link rel="canonical" href="https://theupbeat.github.io/posts/cgroups_2/" />
+
+
+    <title>
+        
+            control groups (cgroups) - The Limiter Part II :: VULNIX 
+        
+    </title>
+
+
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.2.1/css/flag-icon.min.css" rel="stylesheet"
+    type="text/css">
+
+
+
+<link rel="stylesheet" href="/main.dede02da9537a98158079c023e83573e18127834838ef08172acce888341a797.css">
+
+
+
+
+ <link rel="shortcut icon" href="/favicon.ico?v=kPP08pKEXB">
+  <link rel="icon" type="image/png" href="/favicon-32x32.png?v=kPP08pKEXB" sizes="32x32">
+  <link rel="icon" type="image/png" href="/favicon-96x96.png?v=kPP08pKEXB" sizes="96x96">
+  <link rel="icon" type="image/png" href="/favicon-194x194.png?v=kPP08pKEXB" sizes="194x194">
+  
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="icon" type="image/png" href="/android-chrome-192x192.png?v=kPP08pKEXB" sizes="192x192">
+  
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="RCC Rick Cogley Central">
+  <link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png?v=kPP08pKEXB">
+  <link rel="apple-touch-icon" sizes="60x60" href="/apple-touch-icon-60x60.png?v=kPP08pKEXB">
+  <link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png?v=kPP08pKEXB">
+  <link rel="apple-touch-icon" sizes="76x76" href="/apple-touch-icon-76x76.png?v=kPP08pKEXB">
+  <link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png?v=kPP08pKEXB">
+  <link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon-120x120.png?v=kPP08pKEXB">
+  <link rel="apple-touch-icon" sizes="144x144" href="/apple-touch-icon-144x144.png?v=kPP08pKEXB">
+  <link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152x152.png?v=kPP08pKEXB">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180x180.png?v=kPP08pKEXB">
+  
+  <link rel="icon" type="image/png" href="/favicon-16x16.png?v=kPP08pKEXB" sizes="16x16">
+  <link rel="manifest" href="/manifest.json?v=kPP08pKEXB">
+  <link rel="mask-icon" href="/safari-pinned-tab.svg?v=kPP08pKEXB" color="#5bbad5">
+  <meta name="msapplication-TileColor" content="#2b5797">
+  <meta name="msapplication-TileImage" content="/mstile-144x144.png?v=kPP08pKEXB">
+  <meta name="theme-color" content="#93278f">
+
+
+
+
+
+
+
+    </head>
+
+    <body class="dark-theme">
+        <div class="container">
+            <header class="header">
+    <span class="header__inner">
+        <a href="/" style="text-decoration: none;">
+    <div class="logo">
+        
+            <span class="logo__mark">></span>
+            <span class="logo__text">$ cd /home/</span>
+            <span class="logo__cursor" style=
+                  "
+                   
+                   ">
+            </span>
+        
+    </div>
+</a>
+
+
+        <span class="header__right">
+            
+                <nav class="menu">
+    <ul class="menu__inner"><li><a href="https://theupbeat.github.io/about">About</a></li><li><a href="https://theupbeat.github.io/posts/">Posts</a></li>
+    </ul>
+</nav>
+
+                <span class="menu-trigger">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+                    </svg>
+                </span>
+            
+
+            <span class="theme-toggle unselectable"><svg class="theme-toggler" width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M22 41C32.4934 41 41 32.4934 41 22C41 11.5066 32.4934 3 22
+  3C11.5066 3 3 11.5066 3 22C3 32.4934 11.5066 41 22 41ZM7 22C7
+  13.7157 13.7157 7 22 7V37C13.7157 37 7 30.2843 7 22Z"/>
+</svg>
+</span>
+        </span>
+    </span>
+</header>
+
+
+
+
+            <div class="content">
+                
+    <main class="post">
+
+        <div class="post-info">
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-clock"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>5 minutes
+
+            
+
+            </p>
+        </div>
+
+        <article>
+            <h1 class="post-title">
+                <a href="https://theupbeat.github.io/posts/cgroups_2/">control groups (cgroups) - The Limiter Part II</a>
+            </h1>
+
+            
+
+            <div class="post-content">
+                <p>As explained in the previous post, control groups are used to limit, prioritize, etc., the available resources in a system. In this series of post we will be creating, limiting, assigning tasks to the cgroups.</p>
+<hr>
+<p><strong>NOTE</strong></p>
+<p>In this whole process I will be using a Arch-based machine with Systemd, specifically Manjaro (please don&rsquo;t come after me).</p>
+<hr>
+<h2 id="part-ii---demonstrating">Part II - Demonstrating</h2>
+<h3 id="libcgroup">libcgroup</h3>
+<p>We can control the cgroups using shell commands. This can be done with the help of <code>libcgroup</code> package. The package provides a lot of features to the user. The features may vary like mounting, editing the values, etc.</p>
+<h4 id="installation">Installation</h4>
+<p>To install libcgroup in your system, run the appropriate command:</p>
+<p>For Arch-based machines:</p>
+<pre><code>pacman -S install libcgroup
+
+If you are unable to do so, download the package from aur:
+
+git clone https://aur.archlinux.org/libcgroup.git
+cd libcgroup
+makepkg -si
+</code></pre><p>For Debian-based machines:</p>
+<pre><code>apt install libcgroup
+</code></pre><p>For Fedora-based machines:</p>
+<pre><code>yum install libcgroup
+</code></pre><h4 id="available-cgroups">Available cgroups</h4>
+<p>To see the available cgroups in your system, use:</p>
+<pre><code>lscgroup # This package is installed with libcgroup
+</code></pre><p><img src="/img/2_1.png" alt="lscgroup"></p>
+<p>cgroups are located at <code>\sys\fs\cgroup\</code>, run the ls command to see the files in the directory:</p>
+<pre><code>ls -l \sys\fs\cgroup\
+</code></pre><p><img src="/img/2_2.png" alt="ls -l \sys\fs\cgroup"></p>
+<h3 id="working-with-cgroups">Working with cgroups</h3>
+<p>There are a 12 control groups:</p>
+<ul>
+<li><code>blkio</code>      - Block I/O (or) set limits to read/write from/to.</li>
+<li><code>cpu</code>        - Control CPU time using CFS (Completely Fair Scheduler).</li>
+<li><code>cpuacct</code>    - Reports are generated regarding the usage of CPU resources by a process.</li>
+<li><code>cpuset</code>     - Assings inividual CPUs and memory nodes to tasks (in a single cgroup).</li>
+<li><code>devices</code>    - Allow/Deny access to devices.</li>
+<li><code>freezer</code>    - Suspends/Resumes a process.</li>
+<li><code>hugetlb</code>    - Allows/Denys the use of huge pages for a specific group.</li>
+<li><code>memory</code>     - Set limits on usage for memory for a task/process.</li>
+<li><code>net_cls</code>    - Allows to note/mark specific packets from a group.</li>
+<li><code>net_prio</code>   - Set the priority dynamically to the network traffic.</li>
+<li><code>perf_event</code> - Allows access to a perf events to a group.</li>
+<li><code>pids</code>       - To limit the number of process/tasks from being forked for cloned when a certain limit is reached.</li>
+</ul>
+<p>In this post, we will be looking at cpuacct.</p>
+<h4 id="cpuacct">CPUACCT</h4>
+<p>The cpuacct (CPU accounting controller) is used to group the tasks that are to be monitored for the usage of CPU.</p>
+<p>CPUACCT can support multiple hierarchies. For example, if a group contains two subgroups, the subgroups usage can be monitored by the parent group.</p>
+<p>To create CPUACCT groups we need to mount the cgroup filesystem (do this if the cgroup is not already mounted):</p>
+<pre><code>mount -t cgroup -o cpuacct none /sys/fs/cgroup
+</code></pre><p>This mounts the parent group, can be visible at /sys/fs/cgroup.</p>
+<p>You can view all the contents of the cpuacct folder, using ls command:</p>
+<pre><code>ls -l /sys/fs/cgroup/cpuacct/
+</code></pre><p><img src="/img/2_4.png" alt="ls -l /sys/fs/cgroup/cpuacct"></p>
+<p>There are a lot of files in the cpuacct cgroup, we can see that most files starts with the controller name i.e. cpuacct. This is helpful when we combine two controllers like cpuacct and devices, there will be no conflicts between the controllers.</p>
+<p>Now we will look at the tasks file which contains the PIDs that are attached to the cgroup. When booted all the tasks are entered into <code>/sys/fs/cgroup/cpuacct/tasks</code>. We can view it using the cat command:</p>
+<pre><code>cat /sys/fs/cgroup/cpuacct/tasks
+</code></pre><p><img src="/img/2_3.png" alt="cat /sys/fs/cgroup/cpuacct/tasks"></p>
+<p>There are different files like cpuacct.usage, cpuacct.stat, etc. present in the directory.</p>
+<p>The cpuacct.usage is used to see the consumed CPU time (presented in nanoseconds):</p>
+<pre><code>cat /sys/fs/cgroup/cpuacct/cpuacct.usage
+</code></pre><p><img src="/img/2_5.png" alt="cat /sys/fs/cgroup/cpuacct/cpuacct.usage"></p>
+<p>The cpuacct.stat is used to see the consumed user and system CPU time by all the tasks included in the cgroup, this also includes the tasks in the lower hierarchy. It is presented as:</p>
+<ul>
+<li><code>user</code> - CPU time consumed by tasks in user mode.</li>
+<li><code>system</code> - CPU time consumed by tasks in system (kernel) mode.</li>
+</ul>
+<p>To see the content of the file use the cat command:</p>
+<pre><code>cat /sys/fs/cgroup/cpuacct/cpuacct.stat
+</code></pre><p><img src="/img/2_6.png" alt="cat /sys/fs/cgroup/cpuacct/cpuacct.stat"></p>
+<h4 id="creating-new-groups-under-cpuacct">Creating New Groups under CPUACCT</h4>
+<p>The new groups should be created under <code>/sys/fs/cgroup/cpuacct</code>.</p>
+<pre><code>cd /sys/fs/cgroup/cpuacct
+mkdir test1
+cd test1
+</code></pre><p><code>ls -l</code> to see the files created in the test directory:</p>
+<p><img src="/img/2_7.png" alt="ls -1"></p>
+<p>You can see the files the are in the parent group are also created in the child group.</p>
+<p>I would like to monitor the CPU usage of the current bash shell. To do that echo the PID of the shell in to the <code>tasks</code> file.</p>
+<pre><code>echo $$ &gt; tasks
+
+cat tasks # To see the PID of the bash
+</code></pre><p><img src="/img/2_8.png" alt="tasks file"></p>
+<p>To see the CPU time consumed by the bash shell, see the <code>cpuacct.usage</code>.</p>
+<p><img src="/img/2_9.png" alt="cat cpuacct.usage"></p>
+<p>To see the CPU time consumed by user and system modes, see the <code>cpuacct.stat</code>.</p>
+<p><img src="/img/2_10.png" alt="cat cpuacct.stat"></p>
+<p>The values of user and system in the stat file are in USER_HZ units.</p>
+<p>There are <code>percpu</code> and <code>peruser</code> files which shows you the CPU time consumed by a single cpu (for multi-cored cpus) and CPU time consumed by a single user (if there are different users attached to the cgroup) respectively.</p>
+<p>You can attach as many processes as you want, just echo the PID into the tasks file.</p>
+<h4 id="persistent-group-configuration">Persistent group configuration</h4>
+<p>The newly created cgroups will be deleted after a reboot. To have the cgroups maintained even after a reboot we need to make persistent group configuration by editing the <code>/etc/cgconfig.conf</code> file.</p>
+<p>Syntax for creating a cgroup and adding controllers:</p>
+<pre><code>group &lt;groupname&gt; {
+  perm {
+# who can manage limits
+    admin {
+      uid = $USER;
+      gid = $GROUP;
+    }
+# who can add tasks to this group
+    task {
+      uid = $USER;
+      gid = $GROUP;
+    }
+  }
+# create this group in cpu and memory controllers
+  &lt;controller { }&gt;
+  cpu { }
+  memory { }
+}
+</code></pre><p>where,</p>
+<ul>
+<li><code>groupname</code>  - The name of the group.</li>
+<li><code>perm</code>       - Permissions (optional). This is added for controlling the rights of the group.</li>
+<li><code>Controller</code> - To which controller will the group be created in (in our case the controller is cpuacct).</li>
+</ul>
+<p>For example, I created a persistent group configuration for cpuacct:</p>
+<pre><code class="language-group" data-lang="group">  perm {
+    admin {
+      uid = theupbeat;
+      gid = theupbeat;
+    }
+    task {
+      uid = theupbeat;
+      gid = theupbeat;
+    }
+  }
+  cpuacct { }
+}
+</code></pre><h3 id="resources">Resources</h3>
+<ol>
+<li><a href="https://wiki.archlinux.org/index.php/cgroups">https://wiki.archlinux.org/index.php/cgroups</a></li>
+<li><a href="https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/resource_management_guide/ch-using_control_groups">https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/resource_management_guide/ch-using_control_groups</a></li>
+<li><a href="https://www.kernel.org/doc/Documentation/cgroup-v1/cpuacct.txt">https://www.kernel.org/doc/Documentation/cgroup-v1/cpuacct.txt</a></li>
+<li><a href="https://sysadmincasts.com/episodes/14-introduction-to-linux-control-groups-cgroups">https://sysadmincasts.com/episodes/14-introduction-to-linux-control-groups-cgroups</a></li>
+<li><a href="https://manpages.ubuntu.com/manpages/xenial/man5/cgconfig.conf.5.html">https://manpages.ubuntu.com/manpages/xenial/man5/cgconfig.conf.5.html</a></li>
+</ol>
+
+            </div>
+        </article>
+
+        <hr />
+
+        <div class="post-info">
+                <p>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-tag meta-icon"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line></svg><span class="tag"><a href="https://theupbeat.github.io/tags/linux">Linux</a></span><span class="tag"><a href="https://theupbeat.github.io/tags/security">Security</a></span><span class="tag"><a href="https://theupbeat.github.io/tags/containers">Containers</a></span><span class="tag"><a href="https://theupbeat.github.io/tags/cgroups">cgroups</a></span>
+                </p>
+
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>973 Words</p>
+
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2020-06-23 18:00 &#43;0530</p>
+        </div>
+
+        
+            <div class="pagination">
+                <div class="pagination__title">
+                    <span class="pagination__title-h"></span>
+                    <hr />
+                </div>
+
+                <div class="pagination__buttons">
+                    
+
+                    
+                        <span class="button next">
+                            <a href="https://theupbeat.github.io/posts/cgroups_1/">
+                                <span class="button__text">control groups (cgroups) - The Limiter Part I</span>
+                                <span class="button__icon">→</span>
+                            </a>
+                        </span>
+                    
+                </div>
+            </div>
+        
+    </main>
+
+            </div>
+
+            
+                <footer class="footer">
+    <div class="footer__inner">
+        <div class="footer__content">
+            <span>&copy; 2020</span>
+            
+                <span><a href="https://theupbeat.github.io/">TheUpBeat</a></span>
+            
+            
+            <span> <a href="https://theupbeat.github.io/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a></span>
+        </div>
+    </div>
+    <div class="footer__inner">
+        <div class="footer__content">
+            <span>Powered by <a href="http://gohugo.io">Hugo</a></span>
+            <span>Made with &#10084; by <a href="https://github.com/rhazdon">Djordje Atlialp</a></span>
+        </div>
+    </div>
+</footer>
+
+            
+        </div>
+
+        
+
+
+
+
+<script type="text/javascript" src="/bundle.min.dc716e9092c9820b77f96da294d0120aeeb189b5bcea9752309ebea27fd53bbe6b13cffb2aca8ecf32525647ceb7001f76091de4199ac5a3caa432c070247f5b.js" integrity="sha512-3HFukJLJggt3&#43;W2ilNASCu6xibW86pdSMJ6&#43;on/VO75rE8/7KsqOzzJSVkfOtwAfdgkd5BmaxaPKpDLAcCR/Ww=="></script>
+
+
+
+    </body>
+</html>
