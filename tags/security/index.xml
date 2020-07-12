@@ -21,27 +21,5 @@
 In this post I would like to share my browser configuration and the extensions that I use to make my life a little secure, private and easier.</description>
     </item>
     
-    <item>
-      <title>control groups (cgroups) - The Limiter Part II</title>
-      <link>https://theupbeat.github.io/posts/cgroups_2/</link>
-      <pubDate>Tue, 23 Jun 2020 18:00:23 +0530</pubDate>
-      
-      <guid>https://theupbeat.github.io/posts/cgroups_2/</guid>
-      <description>As explained in the previous post, control groups are used to limit, prioritize, etc., the available resources in a system. In this series of post we will be creating, limiting, assigning tasks to the cgroups.
- NOTE
-In this whole process I will be using a Arch-based machine with Systemd, specifically Manjaro (please don&amp;rsquo;t come after me).
- Part II - Demonstrating libcgroup We can control the cgroups using shell commands.</description>
-    </item>
-    
-    <item>
-      <title>control groups (cgroups) - The Limiter Part I</title>
-      <link>https://theupbeat.github.io/posts/cgroups_1/</link>
-      <pubDate>Wed, 17 Jun 2020 10:30:00 +0530</pubDate>
-      
-      <guid>https://theupbeat.github.io/posts/cgroups_1/</guid>
-      <description>The Linux Kernel is full of mysteries and tools which can help boost the performance, improve the efficiency and at the same time break the system. This series mainly focuses on the &amp;ldquo;cgroups&amp;rdquo; feature in the Linux Kernel. There will be a series of posts explaining, demonstrating, and tweaking it.
-Part I - Introduction What is cgroups cgroups is a feature available to the end user which is present in Linux Kernel.</description>
-    </item>
-    
   </channel>
 </rss>

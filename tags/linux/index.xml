@@ -12,7 +12,7 @@
     
     
     <item>
-      <title>control groups (cgroups) - The Limiter Part II</title>
+      <title>control groups (cgroups) - CPUACCT</title>
       <link>https://theupbeat.github.io/posts/cgroups_2/</link>
       <pubDate>Tue, 23 Jun 2020 18:00:23 +0530</pubDate>
       
@@ -24,7 +24,7 @@ In this whole process I will be using a Arch-based machine with Systemd, specifi
     </item>
     
     <item>
-      <title>control groups (cgroups) - The Limiter Part I</title>
+      <title>control groups (cgroups) - Introduction</title>
       <link>https://theupbeat.github.io/posts/cgroups_1/</link>
       <pubDate>Wed, 17 Jun 2020 10:30:00 +0530</pubDate>
       
