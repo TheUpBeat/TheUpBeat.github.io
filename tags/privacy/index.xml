@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Privacy on VULNIX</title>
+    <link>https://theupbeat.github.io/tags/privacy/</link>
+    <description>Recent content in Privacy on VULNIX</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sat, 11 Jul 2020 16:00:00 +0530</lastBuildDate>
+    
+	<atom:link href="https://theupbeat.github.io/tags/privacy/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>My Browser Configuration</title>
+      <link>https://theupbeat.github.io/posts/browser_conf/</link>
+      <pubDate>Sat, 11 Jul 2020 16:00:00 +0530</pubDate>
+      
+      <guid>https://theupbeat.github.io/posts/browser_conf/</guid>
+      <description>A Browser is what we use to access the Internet i.e. the World. The technology has advanced to a level that we can mostly access/use everything from our palms. Out of all the software/applications the mostly helpful and useful one is a Browser.
+In this post I would like to share my browser configuration and the extensions that I use to make my life a little secure, private and easier.</description>
+    </item>
+    
+  </channel>
+</rss>

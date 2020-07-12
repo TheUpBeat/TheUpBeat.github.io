@@ -3,6 +3,51 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
+    <loc>https://theupbeat.github.io/tags/browser/</loc>
+    <lastmod>2020-07-11T16:00:00+05:30</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://theupbeat.github.io/tags/configuration/</loc>
+    <lastmod>2020-07-11T16:00:00+05:30</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://theupbeat.github.io/tags/extensions/</loc>
+    <lastmod>2020-07-11T16:00:00+05:30</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://theupbeat.github.io/posts/browser_conf/</loc>
+    <lastmod>2020-07-11T16:00:00+05:30</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://theupbeat.github.io/posts/</loc>
+    <lastmod>2020-07-11T16:00:00+05:30</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://theupbeat.github.io/tags/privacy/</loc>
+    <lastmod>2020-07-11T16:00:00+05:30</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://theupbeat.github.io/tags/security/</loc>
+    <lastmod>2020-07-11T16:00:00+05:30</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://theupbeat.github.io/tags/</loc>
+    <lastmod>2020-07-11T16:00:00+05:30</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://theupbeat.github.io/</loc>
+    <lastmod>2020-07-11T16:00:00+05:30</lastmod>
+  </url>
+  
+  <url>
     <loc>https://theupbeat.github.io/tags/cgroups/</loc>
     <lastmod>2020-06-23T18:00:23+05:30</lastmod>
   </url>
@@ -19,26 +64,6 @@
   
   <url>
     <loc>https://theupbeat.github.io/tags/linux/</loc>
-    <lastmod>2020-06-23T18:00:23+05:30</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://theupbeat.github.io/posts/</loc>
-    <lastmod>2020-06-23T18:00:23+05:30</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://theupbeat.github.io/tags/security/</loc>
-    <lastmod>2020-06-23T18:00:23+05:30</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://theupbeat.github.io/tags/</loc>
-    <lastmod>2020-06-23T18:00:23+05:30</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://theupbeat.github.io/</loc>
     <lastmod>2020-06-23T18:00:23+05:30</lastmod>
   </url>
   

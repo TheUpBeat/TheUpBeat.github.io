@@ -6,10 +6,55 @@
     <description>Recent content in Tags on VULNIX</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 23 Jun 2020 18:00:23 +0530</lastBuildDate>
+    <lastBuildDate>Sat, 11 Jul 2020 16:00:00 +0530</lastBuildDate>
     
 	<atom:link href="https://theupbeat.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Browser</title>
+      <link>https://theupbeat.github.io/tags/browser/</link>
+      <pubDate>Sat, 11 Jul 2020 16:00:00 +0530</pubDate>
+      
+      <guid>https://theupbeat.github.io/tags/browser/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Configuration</title>
+      <link>https://theupbeat.github.io/tags/configuration/</link>
+      <pubDate>Sat, 11 Jul 2020 16:00:00 +0530</pubDate>
+      
+      <guid>https://theupbeat.github.io/tags/configuration/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Extensions</title>
+      <link>https://theupbeat.github.io/tags/extensions/</link>
+      <pubDate>Sat, 11 Jul 2020 16:00:00 +0530</pubDate>
+      
+      <guid>https://theupbeat.github.io/tags/extensions/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Privacy</title>
+      <link>https://theupbeat.github.io/tags/privacy/</link>
+      <pubDate>Sat, 11 Jul 2020 16:00:00 +0530</pubDate>
+      
+      <guid>https://theupbeat.github.io/tags/privacy/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Security</title>
+      <link>https://theupbeat.github.io/tags/security/</link>
+      <pubDate>Sat, 11 Jul 2020 16:00:00 +0530</pubDate>
+      
+      <guid>https://theupbeat.github.io/tags/security/</guid>
+      <description></description>
+    </item>
     
     <item>
       <title>cgroups</title>
@@ -35,15 +80,6 @@
       <pubDate>Tue, 23 Jun 2020 18:00:23 +0530</pubDate>
       
       <guid>https://theupbeat.github.io/tags/linux/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>Security</title>
-      <link>https://theupbeat.github.io/tags/security/</link>
-      <pubDate>Tue, 23 Jun 2020 18:00:23 +0530</pubDate>
-      
-      <guid>https://theupbeat.github.io/tags/security/</guid>
       <description></description>
     </item>
     
