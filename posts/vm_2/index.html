@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="author" content="TheUpBeat ">
+<meta name="description" content="As we have seen a little into KVM/QEMU, Libvirt in the previous post, this post will demonstrate how to create, manage and remove virtual machines.
+ Note
+I use Void Linux as my base operating system (recently hoped from Manjaro), so the commands will be according to it. But most of the packages are some with similar or different names.
+ Before installing packages for KVM/QEMU, we need to check for KVM support." />
+<meta name="keywords" content=", KVM, QEMU, Libvirt, Virtual Machine, VM" />
+<meta name="robots" content="noodp" />
+<meta name="theme-color" content="" />
+<link rel="canonical" href="https://theupbeat.github.io/posts/vm_2/" />
+
+
+    <title>
+        
+            Creating and Managing Virtual Machines using Libvirt :: VULNIX 
+        
+    </title>
+
+
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.2.1/css/flag-icon.min.css" rel="stylesheet"
+    type="text/css">
+
+
+
+<link rel="stylesheet" href="/main.dede02da9537a98158079c023e83573e18127834838ef08172acce888341a797.css">
+
+
+
+
+ <link rel="shortcut icon" href="/favicon.ico?v=kPP08pKEXB">
+  <link rel="icon" type="image/png" href="/favicon-32x32.png?v=kPP08pKEXB" sizes="32x32">
+  <link rel="icon" type="image/png" href="/favicon-96x96.png?v=kPP08pKEXB" sizes="96x96">
+  <link rel="icon" type="image/png" href="/favicon-194x194.png?v=kPP08pKEXB" sizes="194x194">
+  
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="icon" type="image/png" href="/android-chrome-192x192.png?v=kPP08pKEXB" sizes="192x192">
+  
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="RCC Rick Cogley Central">
+  <link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png?v=kPP08pKEXB">
+  <link rel="apple-touch-icon" sizes="60x60" href="/apple-touch-icon-60x60.png?v=kPP08pKEXB">
+  <link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png?v=kPP08pKEXB">
+  <link rel="apple-touch-icon" sizes="76x76" href="/apple-touch-icon-76x76.png?v=kPP08pKEXB">
+  <link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png?v=kPP08pKEXB">
+  <link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon-120x120.png?v=kPP08pKEXB">
+  <link rel="apple-touch-icon" sizes="144x144" href="/apple-touch-icon-144x144.png?v=kPP08pKEXB">
+  <link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152x152.png?v=kPP08pKEXB">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180x180.png?v=kPP08pKEXB">
+  
+  <link rel="icon" type="image/png" href="/favicon-16x16.png?v=kPP08pKEXB" sizes="16x16">
+  <link rel="manifest" href="/manifest.json?v=kPP08pKEXB">
+  <link rel="mask-icon" href="/safari-pinned-tab.svg?v=kPP08pKEXB" color="#5bbad5">
+  <meta name="msapplication-TileColor" content="#2b5797">
+  <meta name="msapplication-TileImage" content="/mstile-144x144.png?v=kPP08pKEXB">
+  <meta name="theme-color" content="#93278f">
+
+
+
+
+
+
+
+    </head>
+
+    <body class="dark-theme">
+        <div class="container">
+            <header class="header">
+    <span class="header__inner">
+        <a href="/" style="text-decoration: none;">
+    <div class="logo">
+        
+            <span class="logo__mark">></span>
+            <span class="logo__text">$ cd /home/</span>
+            <span class="logo__cursor" style=
+                  "
+                   
+                   ">
+            </span>
+        
+    </div>
+</a>
+
+        <script type="application/ld+json">
+{
+    "@context" : "http://schema.org",
+    "@type" : "BlogPosting",
+    "mainEntityOfPage": {
+         "@type": "WebPage",
+         "@id": "https:\/\/theupbeat.github.io\/"
+    },
+    "articleSection" : "posts",
+    "name" : "Creating and Managing Virtual Machines using Libvirt",
+    "headline" : "Creating and Managing Virtual Machines using Libvirt",
+    "description" : "As we have seen a little into KVM\/QEMU, Libvirt in the previous post, this post will demonstrate how to create, manage and remove virtual machines.\n Note\nI use Void Linux as my base operating system (recently hoped from Manjaro), so the commands will be according to it. But most of the packages are some with similar or different names.\n Before installing packages for KVM\/QEMU, we need to check for KVM support.",
+    "inLanguage" : "en-US",
+    "author" : "TheUpBeat",
+    "creator" : "TheUpBeat",
+    "publisher": "TheUpBeat",
+    "accountablePerson" : "TheUpBeat",
+    "copyrightHolder" : "TheUpBeat",
+    "copyrightYear" : "2020",
+    "datePublished": "2020-07-23 18:00:00 \u002b0530 IST",
+    "dateModified" : "2020-07-23 18:00:00 \u002b0530 IST",
+    "url" : "https:\/\/theupbeat.github.io\/posts\/vm_2\/",
+    "wordCount" : "1259",
+    "keywords" : [ "KVM","QEMU","Libvirt","Virtual Machine","VM","Blog" ]
+}
+</script>
+
+
+        <span class="header__right">
+            
+                <nav class="menu">
+    <ul class="menu__inner"><li><a href="https://theupbeat.github.io/about">About</a></li><li><a href="https://theupbeat.github.io/posts/">Posts</a></li>
+    </ul>
+</nav>
+
+                <span class="menu-trigger">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+                    </svg>
+                </span>
+            
+
+            <span class="theme-toggle unselectable"><svg class="theme-toggler" width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M22 41C32.4934 41 41 32.4934 41 22C41 11.5066 32.4934 3 22
+  3C11.5066 3 3 11.5066 3 22C3 32.4934 11.5066 41 22 41ZM7 22C7
+  13.7157 13.7157 7 22 7V37C13.7157 37 7 30.2843 7 22Z"/>
+</svg>
+</span>
+        </span>
+    </span>
+</header>
+
+
+            <div class="content">
+                
+    <main class="post">
+
+        <div class="post-info">
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-clock"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>6 minutes
+
+            
+
+            </p>
+        </div>
+
+        <article>
+            <h1 class="post-title">
+                <a href="https://theupbeat.github.io/posts/vm_2/">Creating and Managing Virtual Machines using Libvirt</a>
+            </h1>
+
+            
+
+            <div class="post-content">
+                <p>As we have seen a little into KVM/QEMU, Libvirt in the previous post, this post will demonstrate how to create, manage and remove virtual machines.</p>
+<hr>
+<p><strong>Note</strong></p>
+<p>I use Void Linux as my base operating system (recently hoped from Manjaro), so the commands will be according to it. But most of the packages are some with similar or different names.</p>
+<hr>
+<p>Before installing packages for KVM/QEMU, we need to check for KVM support.</p>
+<h2 id="prerequisites-for-kvm">Prerequisites for KVM:</h2>
+<ul>
+<li>
+<p>To use KVM the host&rsquo;s processor should support virtualization. It is named different for different processor <code>VT-x</code> for <code>Intel</code> and <code>AMD-V</code> for <code>AMD</code> processors.</p>
+</li>
+<li>
+<p>To check whether the system provides the support for virtualization for either CPUs, use the following command:</p>
+</li>
+</ul>
+<pre><code>LC_ALL=C lscpu | grep Virtualization
+</code></pre><p>Or</p>
+<pre><code>grep -E 'vmx|svm|0xc0f' /proc/cpuinfo
+</code></pre><p>If nothing is displayed after running either of the two commands, then the processor does not support hardware virtualization, and will unable to use KVM.</p>
+<p>The virtualization support can be turned on in the BIOS (if available).</p>
+<ul>
+<li>To enable KVM, your user must be added to the <code>KVM</code> group:</li>
+</ul>
+<pre><code>usermod -aG kvm &lt;username&gt;
+</code></pre><ul>
+<li>To check whether the modules are loaded in the kernel, use the following command:</li>
+</ul>
+<pre><code>lsmod | grep kvm
+</code></pre><p>If the output is either <code>kvm_intel</code> or <code>kvm_amd</code>, the modules are loaded.</p>
+<p>If the modules are not loaded, use the following command to do so:</p>
+<pre><code>modprobe kvm-amd # for AMD CPUs
+
+modprobe kvm-intel # for Intel CPUs
+</code></pre><ul>
+<li>Kernel version should be greater than <code>2.6.60</code>.</li>
+</ul>
+<h2 id="packages-and-dependencies">Packages and Dependencies</h2>
+<p>If everything is set right, we need to install the packages and dependencies that are required to create/manage a VM.</p>
+<ul>
+<li><code>qemu</code> - This package provides the <code>x86_64</code> architecture emulators for both full-system emulation (<code>qemu-system-x86_64</code>) and usermode (<code>qemu-x86_64</code>) variants.</li>
+</ul>
+<pre><code>xbps-install -S qemu
+</code></pre><ul>
+<li><code>bridge-utils</code> - Bridges the physical interfaces and the VM interfaces</li>
+</ul>
+<pre><code>xbps-install -S bridge-utils
+</code></pre><ul>
+<li><code>libvirt</code> - The libvirt package provides the daemon libvirtd which handles library calls, manages virtual machines and hypervisor controls.</li>
+</ul>
+<pre><code>xbps-install -S libvirt
+</code></pre><p>Add the user to the libvirt group:</p>
+<pre><code>usermod -aG libvirt &lt;user&gt;
+</code></pre><p>To start the <code>libvirtd</code> daemon, run:</p>
+<pre><code>ln -s /etc/sv/libvirtd /var/service
+</code></pre><p>To check the status:</p>
+<pre><code>sv status libvirtd
+</code></pre><ul>
+<li><code>virt-manager</code> - virt-manager is a graphical tool for managing virtual machines via libvirt. It includes virt-install, virt-clone, virt-xml.</li>
+</ul>
+<pre><code>xbps-install -S virt-manager
+</code></pre><p>Start the <code>virtlogd</code> service:</p>
+<pre><code>ln -s /etc/sv/virtlogd/ /var/service/
+</code></pre><ul>
+<li><code>libguestfs</code> - libguestfs is a set of tools for accessing and modifying virtual machine (VM) disk images. It can access alomost any disk image including Vmware’s VMDK &amp; Hyper-V disk format.</li>
+</ul>
+<pre><code>xbps-install -S libguestfs
+</code></pre><p>This package includes virsh.</p>
+<ul>
+<li><code>virt-viewer</code> - Virt Viewer provides a graphical viewer for the guest OS display. At this time is supports guest OS using the VNC or SPICE protocols.</li>
+</ul>
+<pre><code>xbps-install -S virt-viewer
+</code></pre><p><strong>To install all the packages</strong></p>
+<pre><code>xbps-install -S qemu bridge-utils libvirt virt-manager libguestfs virt-viewer
+</code></pre><h2 id="creating-a-vm">Creating a VM</h2>
+<p>Now that we have installed all the required packages and its dependencies, we can now proceed to create a virtual machine with <code>virt-install</code>.</p>
+<p>Now before getting into it, the following are the details of the VM to be created:</p>
+<pre><code>VM Name   -   Manjaro
+NETWORK   -   virbr0 (virbr0/br0)
+RAM       -   4096
+CPU       -   4
+DISK      -   25GB
+CD-ROM    -   /vol1/ISO/manjaro.iso
+</code></pre><ul>
+<li><code>virt-install</code> options that are required to create a VM:</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Options</th>
+<th>Values</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>--connect</td>
+<td>qemu:///system</td>
+<td>Connect to the localhost KVM</td>
+</tr>
+<tr>
+<td>--name</td>
+<td>Manjaro</td>
+<td>Name of the VM</td>
+</tr>
+<tr>
+<td>--ram</td>
+<td>4096</td>
+<td>Size of RAM in MB</td>
+</tr>
+<tr>
+<td>--vcpus</td>
+<td>4</td>
+<td>No. of vcpus</td>
+</tr>
+<tr>
+<td>--os-type</td>
+<td>linux</td>
+<td>OS type</td>
+</tr>
+<tr>
+<td>--os-variant</td>
+<td>manjaro</td>
+<td>OS variant (use osinfo-query os)</td>
+</tr>
+<tr>
+<td>--network</td>
+<td>network=virbr0</td>
+<td>Bridge for network connectivity</td>
+</tr>
+<tr>
+<td>--graphics</td>
+<td>spice</td>
+<td>Configure guest display settings</td>
+</tr>
+<tr>
+<td>--virt-type</td>
+<td>kvm</td>
+<td>Virtualization type as KVM or Xen</td>
+</tr>
+<tr>
+<td>--disk size</td>
+<td>25</td>
+<td>Disk Space of the VM</td>
+</tr>
+<tr>
+<td>--cdrom</td>
+<td>/path/of/iso</td>
+<td>Path for the ISO file</td>
+</tr>
+</tbody>
+</table>
+<pre><code>virt-install --connect qemu:///system --name Manjaro --ram 4096 --vcpus 4 --os-type linux --os-variant manjaro --network bridge=virbr0 --graphics spice --virt-type kvm --disk size=25 --cdrom /vol1/ISO/manjaro-xfce-20.0.1-200511-linux56.iso
+</code></pre><ul>
+<li>To shutdown the machine</li>
+</ul>
+<pre><code>virsh shutdown &lt;domain-name&gt;
+</code></pre><h2 id="managing-virtual-machines-with-virsh">Managing virtual machines with virsh</h2>
+<ul>
+<li>
+<p>The user can create, manage, delete, start and stop virtual machines with the virsh command.</p>
+</li>
+<li>
+<p>It can be used in scripts for automating some of the aspects of managing the virtual machine.</p>
+</li>
+<li>
+<p>The terminology virsh uses is a little different. The term <code>domain</code> will be used instead of the term guest virtual machine.</p>
+</li>
+<li>
+<p>The virtual machine that is created in one user cannot be retrieved by other user. To access all the virtual machines in a system, change the livbirt URL to access all the guests in a system.</p>
+</li>
+</ul>
+<pre><code>virsh --connect qemu:///system list --all
+</code></pre><p>The above command outputs the guest machines in a single system including all the ones from different users.</p>
+<ul>
+<li>
+<p>The domain name of the machine create above is <code>Manjaro</code>.</p>
+</li>
+<li>
+<p>To start a virtual machine</p>
+</li>
+</ul>
+<pre><code>virsh --connect qemu:///system start Manjaro
+</code></pre><ul>
+<li>To reboot a virtual machine</li>
+</ul>
+<pre><code>virsh --connect qemu:///system reboot Manjaro
+</code></pre><ul>
+<li>To shutdown a virtual machine</li>
+</ul>
+<pre><code>virsh --connect qemu:///system shutdown Manjaro
+</code></pre><ul>
+<li>To suspend a virtual machine</li>
+</ul>
+<pre><code>virsh --connect qemu:///system suspend Manjaro
+</code></pre><ul>
+<li>To resume a virtual machine</li>
+</ul>
+<pre><code>virsh --connect qemu:///system resume Manjaro
+</code></pre><h3 id="to-edit-the-storage-path-of-the-virtual-machine">To edit the storage path of the virtual machine</h3>
+<p>In KVM, the virtual machines are store in <code>/var/lib/libvirt/images</code>. The default storage path can be changed to the users preference.</p>
+<ul>
+<li>
+<p>First, login to the host machine. Shutdown all the VMs, if any loaded.</p>
+</li>
+<li>
+<p>To list the storage pool</p>
+</li>
+</ul>
+<pre><code>virsh --connect qemu:///system pool-list
+</code></pre><ul>
+<li>To get the info about the storage pool</li>
+</ul>
+<pre><code>virsh --connect qemu:///system pool-info default
+</code></pre><ul>
+<li>To get the path of the storage pool</li>
+</ul>
+<pre><code>virsh --connect qemu:///system pool-dumpxml default | grep -i path
+</code></pre><ul>
+<li>To check whether the existing VMs are located in the pool path</li>
+</ul>
+<pre><code>virsh --connect qemu:///system vol-list default | grep &quot;/var/lib/libvirt/images&quot;
+
+virsh --connect qemu:///system vol-list default
+</code></pre><ul>
+<li>Before changing the path, stop the storage pool</li>
+</ul>
+<pre><code>virsh --connect qemu:///system pool-destroy default
+</code></pre><ul>
+<li>Edit the default pool configuration</li>
+</ul>
+<pre><code>virsh --connect qemu:///system pool-edit default
+</code></pre><ul>
+<li>Edit the default pool configuration</li>
+</ul>
+<pre><code>virsh --connect qemu:///system pool-edit default
+</code></pre><ul>
+<li>
+<p>Change the path in the <code>&lt;path&gt;your_new_path&lt;/path&gt;</code></p>
+</li>
+<li>
+<p>After editing the path, start the storage pool.</p>
+</li>
+</ul>
+<pre><code>virsh --connect qemu:///system pool-start default
+</code></pre><ul>
+<li>To verify</li>
+</ul>
+<pre><code>virsh --connect qemu:///system pool-dumpxml default | grep -i path
+</code></pre><ul>
+<li>To move the exciting VMs to the new path</li>
+</ul>
+<pre><code>mv /var/lib/libvirt/images/&lt;name_of_vm&gt;.qcow2 /your/new/path/
+</code></pre><ul>
+<li>Edit the VM config&rsquo;s to the new path</li>
+</ul>
+<pre><code>virsh --connect qemu:///system edit Manjaro
+</code></pre><p>Change the <code>source file='/var/lib/libvirt/images/&lt;name_of_vm&gt;.qcow2'</code> to <code>source file='\your\new\path\&lt;name_of_vm&gt;.qcow2'</code></p>
+<ul>
+<li>Everything is set. Start the KVM guest.</li>
+</ul>
+<pre><code>virsh --connect qemu:///system start Manjaro
+</code></pre><h3 id="add-virtual-disk-to-an-active-virtual-machine">Add virtual disk to an active virtual machine</h3>
+<p>To add extra disk space to an existing VM</p>
+<ul>
+<li><code>qemu-img</code> is used to create a virtual disk</li>
+</ul>
+<pre><code>qemu-img resize Manjaro.qcow2 +10G
+</code></pre><p>This add (&lsquo;+&rsquo;) 10GB to the virtual machine.</p>
+<h3 id="add-memory-to-the-virtual-machine">Add Memory to the virtual machine</h3>
+<p>For example, lets try to increase the memory of the virtual machine from 4GB to 6GB.</p>
+<ul>
+<li>
+<p>Shutdown the virtual machine</p>
+</li>
+<li>
+<p>Using <code>virsh edit</code> edit the VM</p>
+</li>
+</ul>
+<pre><code>virsh --connect qemu:///system edit Manjaro
+</code></pre><ul>
+<li>
+<p>Change the value of the memory size (in KiB) in <code>&lt;memory unit='KiB'&gt;4194304&lt;/memory&gt;</code> to <code>&lt;memory unit='KiB'&gt;6291456&lt;/memory&gt;</code></p>
+</li>
+<li>
+<p>Save the file and exit. Restarting the VM will show the updated configuration.</p>
+</li>
+</ul>
+<h3 id="add-vcpus-to-a-virtual-machine">Add VCPUs to a virtual machine</h3>
+<p>To increase the number of VCPUs allocated to a virtual machine edit the xml file.</p>
+<ul>
+<li>
+<p>Shutdown the virtual machine.</p>
+</li>
+<li>
+<p>Using <code>virsh edit</code> edit the configuration of the virtual machine.</p>
+</li>
+<li>
+<p>Change the value from <code>&lt;vcpu placement='static'&gt;2&lt;/vcpu&gt;</code> to <code>&lt;vcpu placement='static'&gt;4&lt;/vcpu&gt;</code></p>
+</li>
+<li>
+<p>Save and exit. Restarting the virtual machine should change the configuration.</p>
+</li>
+</ul>
+<h3 id="saving-the-configuration-and-recreating">Saving the configuration and recreating</h3>
+<p>The configuration of virtual machine can be saved and can be used to recreate the virtual machine.</p>
+<ul>
+<li>To Save</li>
+</ul>
+<pre><code>virsh --connect qemu:///connect dumpxml Manjaro &gt; Manjaro.xml
+</code></pre><ul>
+<li>To recreate the machine from the <code>xml</code> configuration</li>
+</ul>
+<pre><code>virsh --connect qemu:///system create Manjaro.xml
+</code></pre><h3 id="delete-the-virtual-machine">Delete the virtual machine</h3>
+<ul>
+<li>
+<p>Shutdown the virtual machine</p>
+</li>
+<li>
+<p>Destroy the virtual machine</p>
+</li>
+</ul>
+<pre><code>virsh --connect qemu:///system destroy Manjaro
+</code></pre><ul>
+<li>Undefine the virtual machine</li>
+</ul>
+<pre><code>virsh --connect qemu:///system undefine Manjaro
+</code></pre><ul>
+<li>Now, remove the disk image file from the system</li>
+</ul>
+<pre><code>rm /var/lib/libvirt/images/Manjaro.qcow2
+</code></pre>
+            </div>
+        </article>
+
+        <hr />
+
+        <div class="post-info">
+                <p>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-tag meta-icon"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line></svg><span class="tag"><a href="https://theupbeat.github.io/tags/kvm">KVM</a></span><span class="tag"><a href="https://theupbeat.github.io/tags/qemu">QEMU</a></span><span class="tag"><a href="https://theupbeat.github.io/tags/libvirt">Libvirt</a></span><span class="tag"><a href="https://theupbeat.github.io/tags/virtual-machine">Virtual Machine</a></span><span class="tag"><a href="https://theupbeat.github.io/tags/vm">VM</a></span>
+                </p>
+
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>1259 Words</p>
+
+            <p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2020-07-23 18:00 &#43;0530</p>
+        </div>
+
+        
+            <div class="pagination">
+                <div class="pagination__title">
+                    <span class="pagination__title-h"></span>
+                    <hr />
+                </div>
+
+                <div class="pagination__buttons">
+                    
+
+                    
+                        <span class="button next">
+                            <a href="https://theupbeat.github.io/posts/vm_1/">
+                                <span class="button__text">KVM, QEMU, Libvirt</span>
+                                <span class="button__icon">→</span>
+                            </a>
+                        </span>
+                    
+                </div>
+            </div>
+        
+    </main>
+
+            </div>
+
+            
+                <footer class="footer">
+    <div class="footer__inner">
+        <div class="footer__content">
+            <span>&copy; 2020</span>
+            
+                <span><a href="https://theupbeat.github.io/">TheUpBeat</a></span>
+            
+            
+            <span> <a href="https://theupbeat.github.io/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a></span>
+        </div>
+    </div>
+    <div class="footer__inner">
+        <div class="footer__content">
+            <span>Powered by <a href="http://gohugo.io">Hugo</a></span>
+            <span>Made with &#10084; by <a href="https://github.com/rhazdon">Djordje Atlialp</a></span>
+        </div>
+    </div>
+</footer>
+
+            
+        </div>
+
+        
+
+
+
+
+<script type="text/javascript" src="/bundle.min.dc716e9092c9820b77f96da294d0120aeeb189b5bcea9752309ebea27fd53bbe6b13cffb2aca8ecf32525647ceb7001f76091de4199ac5a3caa432c070247f5b.js" integrity="sha512-3HFukJLJggt3&#43;W2ilNASCu6xibW86pdSMJ6&#43;on/VO75rE8/7KsqOzzJSVkfOtwAfdgkd5BmaxaPKpDLAcCR/Ww=="></script>
+
+
+
+    </body>
+</html>

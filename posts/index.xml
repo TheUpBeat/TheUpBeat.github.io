@@ -5,8 +5,595 @@
         <description>Recent content in Posts on VULNIX</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>en-us</language>
-        <lastBuildDate>Sat, 11 Jul 2020 16:00:00 +0530</lastBuildDate>
+        <lastBuildDate>Thu, 23 Jul 2020 18:00:00 +0530</lastBuildDate>
         <atom:link href="https://theupbeat.github.io/posts/index.xml" rel="self" type="application/rss+xml" />
+        
+        <item>
+            <title>Creating and Managing Virtual Machines using Libvirt</title>
+            <link>https://theupbeat.github.io/posts/vm_2/</link>
+            <pubDate>Thu, 23 Jul 2020 18:00:00 +0530</pubDate>
+            
+            <guid>https://theupbeat.github.io/posts/vm_2/</guid>
+            <description>As we have seen a little into KVM/QEMU, Libvirt in the previous post, this post will demonstrate how to create, manage and remove virtual machines.
+ Note
+I use Void Linux as my base operating system (recently hoped from Manjaro), so the commands will be according to it. But most of the packages are some with similar or different names.
+ Before installing packages for KVM/QEMU, we need to check for KVM support.</description>
+            <content type="html"><![CDATA[<p>As we have seen a little into KVM/QEMU, Libvirt in the previous post, this post will demonstrate how to create, manage and remove virtual machines.</p>
+<hr>
+<p><strong>Note</strong></p>
+<p>I use Void Linux as my base operating system (recently hoped from Manjaro), so the commands will be according to it. But most of the packages are some with similar or different names.</p>
+<hr>
+<p>Before installing packages for KVM/QEMU, we need to check for KVM support.</p>
+<h2 id="prerequisites-for-kvm">Prerequisites for KVM:</h2>
+<ul>
+<li>
+<p>To use KVM the host&rsquo;s processor should support virtualization. It is named different for different processor <code>VT-x</code> for <code>Intel</code> and <code>AMD-V</code> for <code>AMD</code> processors.</p>
+</li>
+<li>
+<p>To check whether the system provides the support for virtualization for either CPUs, use the following command:</p>
+</li>
+</ul>
+<pre><code>LC_ALL=C lscpu | grep Virtualization
+</code></pre><p>Or</p>
+<pre><code>grep -E 'vmx|svm|0xc0f' /proc/cpuinfo
+</code></pre><p>If nothing is displayed after running either of the two commands, then the processor does not support hardware virtualization, and will unable to use KVM.</p>
+<p>The virtualization support can be turned on in the BIOS (if available).</p>
+<ul>
+<li>To enable KVM, your user must be added to the <code>KVM</code> group:</li>
+</ul>
+<pre><code>usermod -aG kvm &lt;username&gt;
+</code></pre><ul>
+<li>To check whether the modules are loaded in the kernel, use the following command:</li>
+</ul>
+<pre><code>lsmod | grep kvm
+</code></pre><p>If the output is either <code>kvm_intel</code> or <code>kvm_amd</code>, the modules are loaded.</p>
+<p>If the modules are not loaded, use the following command to do so:</p>
+<pre><code>modprobe kvm-amd # for AMD CPUs
+
+modprobe kvm-intel # for Intel CPUs
+</code></pre><ul>
+<li>Kernel version should be greater than <code>2.6.60</code>.</li>
+</ul>
+<h2 id="packages-and-dependencies">Packages and Dependencies</h2>
+<p>If everything is set right, we need to install the packages and dependencies that are required to create/manage a VM.</p>
+<ul>
+<li><code>qemu</code> - This package provides the <code>x86_64</code> architecture emulators for both full-system emulation (<code>qemu-system-x86_64</code>) and usermode (<code>qemu-x86_64</code>) variants.</li>
+</ul>
+<pre><code>xbps-install -S qemu
+</code></pre><ul>
+<li><code>bridge-utils</code> - Bridges the physical interfaces and the VM interfaces</li>
+</ul>
+<pre><code>xbps-install -S bridge-utils
+</code></pre><ul>
+<li><code>libvirt</code> - The libvirt package provides the daemon libvirtd which handles library calls, manages virtual machines and hypervisor controls.</li>
+</ul>
+<pre><code>xbps-install -S libvirt
+</code></pre><p>Add the user to the libvirt group:</p>
+<pre><code>usermod -aG libvirt &lt;user&gt;
+</code></pre><p>To start the <code>libvirtd</code> daemon, run:</p>
+<pre><code>ln -s /etc/sv/libvirtd /var/service
+</code></pre><p>To check the status:</p>
+<pre><code>sv status libvirtd
+</code></pre><ul>
+<li><code>virt-manager</code> - virt-manager is a graphical tool for managing virtual machines via libvirt. It includes virt-install, virt-clone, virt-xml.</li>
+</ul>
+<pre><code>xbps-install -S virt-manager
+</code></pre><p>Start the <code>virtlogd</code> service:</p>
+<pre><code>ln -s /etc/sv/virtlogd/ /var/service/
+</code></pre><ul>
+<li><code>libguestfs</code> - libguestfs is a set of tools for accessing and modifying virtual machine (VM) disk images. It can access alomost any disk image including Vmware’s VMDK &amp; Hyper-V disk format.</li>
+</ul>
+<pre><code>xbps-install -S libguestfs
+</code></pre><p>This package includes virsh.</p>
+<ul>
+<li><code>virt-viewer</code> - Virt Viewer provides a graphical viewer for the guest OS display. At this time is supports guest OS using the VNC or SPICE protocols.</li>
+</ul>
+<pre><code>xbps-install -S virt-viewer
+</code></pre><p><strong>To install all the packages</strong></p>
+<pre><code>xbps-install -S qemu bridge-utils libvirt virt-manager libguestfs virt-viewer
+</code></pre><h2 id="creating-a-vm">Creating a VM</h2>
+<p>Now that we have installed all the required packages and its dependencies, we can now proceed to create a virtual machine with <code>virt-install</code>.</p>
+<p>Now before getting into it, the following are the details of the VM to be created:</p>
+<pre><code>VM Name   -   Manjaro
+NETWORK   -   virbr0 (virbr0/br0)
+RAM       -   4096
+CPU       -   4
+DISK      -   25GB
+CD-ROM    -   /vol1/ISO/manjaro.iso
+</code></pre><ul>
+<li><code>virt-install</code> options that are required to create a VM:</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Options</th>
+<th>Values</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>--connect</td>
+<td>qemu:///system</td>
+<td>Connect to the localhost KVM</td>
+</tr>
+<tr>
+<td>--name</td>
+<td>Manjaro</td>
+<td>Name of the VM</td>
+</tr>
+<tr>
+<td>--ram</td>
+<td>4096</td>
+<td>Size of RAM in MB</td>
+</tr>
+<tr>
+<td>--vcpus</td>
+<td>4</td>
+<td>No. of vcpus</td>
+</tr>
+<tr>
+<td>--os-type</td>
+<td>linux</td>
+<td>OS type</td>
+</tr>
+<tr>
+<td>--os-variant</td>
+<td>manjaro</td>
+<td>OS variant (use osinfo-query os)</td>
+</tr>
+<tr>
+<td>--network</td>
+<td>network=virbr0</td>
+<td>Bridge for network connectivity</td>
+</tr>
+<tr>
+<td>--graphics</td>
+<td>spice</td>
+<td>Configure guest display settings</td>
+</tr>
+<tr>
+<td>--virt-type</td>
+<td>kvm</td>
+<td>Virtualization type as KVM or Xen</td>
+</tr>
+<tr>
+<td>--disk size</td>
+<td>25</td>
+<td>Disk Space of the VM</td>
+</tr>
+<tr>
+<td>--cdrom</td>
+<td>/path/of/iso</td>
+<td>Path for the ISO file</td>
+</tr>
+</tbody>
+</table>
+<pre><code>virt-install --connect qemu:///system --name Manjaro --ram 4096 --vcpus 4 --os-type linux --os-variant manjaro --network bridge=virbr0 --graphics spice --virt-type kvm --disk size=25 --cdrom /vol1/ISO/manjaro-xfce-20.0.1-200511-linux56.iso
+</code></pre><ul>
+<li>To shutdown the machine</li>
+</ul>
+<pre><code>virsh shutdown &lt;domain-name&gt;
+</code></pre><h2 id="managing-virtual-machines-with-virsh">Managing virtual machines with virsh</h2>
+<ul>
+<li>
+<p>The user can create, manage, delete, start and stop virtual machines with the virsh command.</p>
+</li>
+<li>
+<p>It can be used in scripts for automating some of the aspects of managing the virtual machine.</p>
+</li>
+<li>
+<p>The terminology virsh uses is a little different. The term <code>domain</code> will be used instead of the term guest virtual machine.</p>
+</li>
+<li>
+<p>The virtual machine that is created in one user cannot be retrieved by other user. To access all the virtual machines in a system, change the livbirt URL to access all the guests in a system.</p>
+</li>
+</ul>
+<pre><code>virsh --connect qemu:///system list --all
+</code></pre><p>The above command outputs the guest machines in a single system including all the ones from different users.</p>
+<ul>
+<li>
+<p>The domain name of the machine create above is <code>Manjaro</code>.</p>
+</li>
+<li>
+<p>To start a virtual machine</p>
+</li>
+</ul>
+<pre><code>virsh --connect qemu:///system start Manjaro
+</code></pre><ul>
+<li>To reboot a virtual machine</li>
+</ul>
+<pre><code>virsh --connect qemu:///system reboot Manjaro
+</code></pre><ul>
+<li>To shutdown a virtual machine</li>
+</ul>
+<pre><code>virsh --connect qemu:///system shutdown Manjaro
+</code></pre><ul>
+<li>To suspend a virtual machine</li>
+</ul>
+<pre><code>virsh --connect qemu:///system suspend Manjaro
+</code></pre><ul>
+<li>To resume a virtual machine</li>
+</ul>
+<pre><code>virsh --connect qemu:///system resume Manjaro
+</code></pre><h3 id="to-edit-the-storage-path-of-the-virtual-machine">To edit the storage path of the virtual machine</h3>
+<p>In KVM, the virtual machines are store in <code>/var/lib/libvirt/images</code>. The default storage path can be changed to the users preference.</p>
+<ul>
+<li>
+<p>First, login to the host machine. Shutdown all the VMs, if any loaded.</p>
+</li>
+<li>
+<p>To list the storage pool</p>
+</li>
+</ul>
+<pre><code>virsh --connect qemu:///system pool-list
+</code></pre><ul>
+<li>To get the info about the storage pool</li>
+</ul>
+<pre><code>virsh --connect qemu:///system pool-info default
+</code></pre><ul>
+<li>To get the path of the storage pool</li>
+</ul>
+<pre><code>virsh --connect qemu:///system pool-dumpxml default | grep -i path
+</code></pre><ul>
+<li>To check whether the existing VMs are located in the pool path</li>
+</ul>
+<pre><code>virsh --connect qemu:///system vol-list default | grep &quot;/var/lib/libvirt/images&quot;
+
+virsh --connect qemu:///system vol-list default
+</code></pre><ul>
+<li>Before changing the path, stop the storage pool</li>
+</ul>
+<pre><code>virsh --connect qemu:///system pool-destroy default
+</code></pre><ul>
+<li>Edit the default pool configuration</li>
+</ul>
+<pre><code>virsh --connect qemu:///system pool-edit default
+</code></pre><ul>
+<li>Edit the default pool configuration</li>
+</ul>
+<pre><code>virsh --connect qemu:///system pool-edit default
+</code></pre><ul>
+<li>
+<p>Change the path in the <code>&lt;path&gt;your_new_path&lt;/path&gt;</code></p>
+</li>
+<li>
+<p>After editing the path, start the storage pool.</p>
+</li>
+</ul>
+<pre><code>virsh --connect qemu:///system pool-start default
+</code></pre><ul>
+<li>To verify</li>
+</ul>
+<pre><code>virsh --connect qemu:///system pool-dumpxml default | grep -i path
+</code></pre><ul>
+<li>To move the exciting VMs to the new path</li>
+</ul>
+<pre><code>mv /var/lib/libvirt/images/&lt;name_of_vm&gt;.qcow2 /your/new/path/
+</code></pre><ul>
+<li>Edit the VM config&rsquo;s to the new path</li>
+</ul>
+<pre><code>virsh --connect qemu:///system edit Manjaro
+</code></pre><p>Change the <code>source file='/var/lib/libvirt/images/&lt;name_of_vm&gt;.qcow2'</code> to <code>source file='\your\new\path\&lt;name_of_vm&gt;.qcow2'</code></p>
+<ul>
+<li>Everything is set. Start the KVM guest.</li>
+</ul>
+<pre><code>virsh --connect qemu:///system start Manjaro
+</code></pre><h3 id="add-virtual-disk-to-an-active-virtual-machine">Add virtual disk to an active virtual machine</h3>
+<p>To add extra disk space to an existing VM</p>
+<ul>
+<li><code>qemu-img</code> is used to create a virtual disk</li>
+</ul>
+<pre><code>qemu-img resize Manjaro.qcow2 +10G
+</code></pre><p>This add (&lsquo;+&rsquo;) 10GB to the virtual machine.</p>
+<h3 id="add-memory-to-the-virtual-machine">Add Memory to the virtual machine</h3>
+<p>For example, lets try to increase the memory of the virtual machine from 4GB to 6GB.</p>
+<ul>
+<li>
+<p>Shutdown the virtual machine</p>
+</li>
+<li>
+<p>Using <code>virsh edit</code> edit the VM</p>
+</li>
+</ul>
+<pre><code>virsh --connect qemu:///system edit Manjaro
+</code></pre><ul>
+<li>
+<p>Change the value of the memory size (in KiB) in <code>&lt;memory unit='KiB'&gt;4194304&lt;/memory&gt;</code> to <code>&lt;memory unit='KiB'&gt;6291456&lt;/memory&gt;</code></p>
+</li>
+<li>
+<p>Save the file and exit. Restarting the VM will show the updated configuration.</p>
+</li>
+</ul>
+<h3 id="add-vcpus-to-a-virtual-machine">Add VCPUs to a virtual machine</h3>
+<p>To increase the number of VCPUs allocated to a virtual machine edit the xml file.</p>
+<ul>
+<li>
+<p>Shutdown the virtual machine.</p>
+</li>
+<li>
+<p>Using <code>virsh edit</code> edit the configuration of the virtual machine.</p>
+</li>
+<li>
+<p>Change the value from <code>&lt;vcpu placement='static'&gt;2&lt;/vcpu&gt;</code> to <code>&lt;vcpu placement='static'&gt;4&lt;/vcpu&gt;</code></p>
+</li>
+<li>
+<p>Save and exit. Restarting the virtual machine should change the configuration.</p>
+</li>
+</ul>
+<h3 id="saving-the-configuration-and-recreating">Saving the configuration and recreating</h3>
+<p>The configuration of virtual machine can be saved and can be used to recreate the virtual machine.</p>
+<ul>
+<li>To Save</li>
+</ul>
+<pre><code>virsh --connect qemu:///connect dumpxml Manjaro &gt; Manjaro.xml
+</code></pre><ul>
+<li>To recreate the machine from the <code>xml</code> configuration</li>
+</ul>
+<pre><code>virsh --connect qemu:///system create Manjaro.xml
+</code></pre><h3 id="delete-the-virtual-machine">Delete the virtual machine</h3>
+<ul>
+<li>
+<p>Shutdown the virtual machine</p>
+</li>
+<li>
+<p>Destroy the virtual machine</p>
+</li>
+</ul>
+<pre><code>virsh --connect qemu:///system destroy Manjaro
+</code></pre><ul>
+<li>Undefine the virtual machine</li>
+</ul>
+<pre><code>virsh --connect qemu:///system undefine Manjaro
+</code></pre><ul>
+<li>Now, remove the disk image file from the system</li>
+</ul>
+<pre><code>rm /var/lib/libvirt/images/Manjaro.qcow2
+</code></pre>]]></content>
+        </item>
+        
+        <item>
+            <title>KVM, QEMU, Libvirt</title>
+            <link>https://theupbeat.github.io/posts/vm_1/</link>
+            <pubDate>Thu, 23 Jul 2020 15:00:00 +0530</pubDate>
+            
+            <guid>https://theupbeat.github.io/posts/vm_1/</guid>
+            <description>Introduction I was looking into virtualization in Linux systems. As we know Linux has arsenal of tools in its back-pocket. It did have something up its sleeve KVM, QEMU, Libvirt. And there a lot of other 3rd party options like VMWare, VirtulBox to name some.
+Its interesting that KVM is a kernel module in the Linux system, which helps in getting native-like performance in the virtual machine. So we will be looking into tweaking KVM, QEMU, Libvirt to our convenience and usage.</description>
+            <content type="html"><![CDATA[<h2 id="introduction">Introduction</h2>
+<p>I was looking into virtualization in Linux systems. As we know Linux has arsenal of tools in its back-pocket. It did have something up its sleeve KVM, QEMU, Libvirt. And there a lot of other 3rd party options like VMWare, VirtulBox to name some.</p>
+<p>Its interesting that KVM is a kernel module in the Linux system, which helps in getting native-like performance in the virtual machine. So we will be looking into tweaking KVM, QEMU, Libvirt to our convenience and usage.</p>
+<h2 id="a-tldr-of-virtualization">A tl;dr of Virtualization</h2>
+<ul>
+<li>
+<p>Well, Virtualization is a technology which lets a user create multiple virtual instances of the same host OS or different one in a single, physical hardware.</p>
+</li>
+<li>
+<p>This means we can create, manage and use multiple operating systems in a single machine.</p>
+</li>
+<li>
+<p>There are many uses of a virtual machine. For Example</p>
+<ul>
+<li>To test an application in a particular environment.</li>
+<li>To experience an operating system before moving to it.</li>
+<li>To improve ones privacy by creating a true Internet sandboxes.</li>
+<li>For Data centers and Service providers:
+<ul>
+<li>Resource efficiency</li>
+<li>Easier management</li>
+<li>Faster provisioning</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>Virtualization is done with the help of <strong>Hypervisor</strong>. A Hypervisor is a software that creates and runs virtual machine. It connects directly to the hardware and allows a user to split a single system into separate, different environments. It also distributes the resources to the VM and the host appropriately. It can also be called as virtual machine monitor (VMM).</p>
+</li>
+</ul>
+<p><img src="/img/4_1.png" alt="Virtual machine"></p>
+<h3 id="hypervisor">Hypervisor</h3>
+<ul>
+<li>There are 2 types of Hypervisors
+<ul>
+<li>Type 1 - Bare Metal hypervisors</li>
+<li>Type 2 - Hosted hypervisors</li>
+</ul>
+</li>
+</ul>
+<h4 id="type-1-hypervisor">Type 1 Hypervisor</h4>
+<ul>
+<li>
+<p>A Type 1 hypervisor directly interacts with the physical hardware&rsquo;s CPU, memory, and storage.</p>
+</li>
+<li>
+<p>They are mostly used in server-based environments.</p>
+</li>
+<li>
+<p>These type of hypervisors are highly efficient. They provide bare-metal performances.</p>
+</li>
+<li>
+<p>They require a separate management machine to control/administer different VMs and control the host machine.</p>
+</li>
+<li>
+<p>Examples:</p>
+<ul>
+<li>KVM (Kernel-based Virtual Machine)</li>
+<li>Xen</li>
+<li>VMWare ESXi</li>
+</ul>
+</li>
+</ul>
+<h4 id="type-2-hypervisor">Type 2 Hypervisor</h4>
+<ul>
+<li>
+<p>A Type 2 hypervisor runs in an application which runs in an OS.</p>
+</li>
+<li>
+<p>They are mostly used by the individuals running multiple systems in their personal computer.</p>
+</li>
+<li>
+<p>These type of hypervisors enables the use of multiple guest operating systems alongside the host for the end user.</p>
+</li>
+<li>
+<p>They access the resources via host operating system introducing latency, which decreases the performance.</p>
+</li>
+<li>
+<p>The security of these guest machines can be compromised.</p>
+</li>
+<li>
+<p>Examples:</p>
+<ul>
+<li>QEMU</li>
+<li>VirtualBox</li>
+<li>VMWare Player</li>
+<li>VMWare Workstation</li>
+</ul>
+</li>
+</ul>
+<h3 id="types-of-virtualization">Types of Virtualization</h3>
+<ul>
+<li>
+<p>Desktop virtualization</p>
+</li>
+<li>
+<p>Network virtualization</p>
+</li>
+<li>
+<p>Storage virtualization</p>
+</li>
+<li>
+<p>Data virtualization</p>
+</li>
+<li>
+<p>Application virtualization</p>
+</li>
+<li>
+<p>Data center virtualization</p>
+</li>
+<li>
+<p>CPU virtualization</p>
+</li>
+<li>
+<p>GPU virtualization</p>
+</li>
+<li>
+<p>Linux virtualization</p>
+</li>
+<li>
+<p>Cloud virtualization</p>
+</li>
+</ul>
+<p>We will looking into Linux Virtualization with KVM, QEMU, Libvirt.</p>
+<h2 id="kvm">KVM</h2>
+<ul>
+<li>
+<p>KVM stands for Kernel-based Virtual Machine.</p>
+</li>
+<li>
+<p>It is built into the Linux kernel from 2.6.20.</p>
+</li>
+<li>
+<p>KVM make the Linux into a hypervisor, which allows a user to to run multiple virtual machines in the host machine.</p>
+</li>
+<li>
+<p>KVM converts Linux into type-1 hypervisor. Every guest machine hosted on the host machine in Linux with KVM is treated as a regular process.</p>
+</li>
+<li>
+<p>The guest machines uses the standard Linux scheduler built into the kernel with the help of KVM.</p>
+</li>
+<li>
+<p>Rest of the components like network card, graphics adapter, CPUs, memory and storage are virtualized.</p>
+</li>
+<li>
+<p><strong>Features</strong></p>
+<ul>
+<li>As KVM is built in kernel it acquires the scalability and performance.</li>
+<li>As the VM is a Linux process, it can be controlled through the kernel features like cgroups, completely fair scheduler, name spaces, etc.</li>
+<li>It inherits memory management from the kernel, like kernel same-paging, non-uniform memory access.</li>
+<li>It can support different types and hardware.</li>
+<li>KVM uses SELinux (Security Enhanced Linux) and secure virtualization (sVirt) to improve VM&rsquo;s security.</li>
+<li>Lower latency issues.</li>
+</ul>
+</li>
+</ul>
+<h2 id="qemu">QEMU</h2>
+<ul>
+<li>
+<p>QEMU stands for Quick Emulator.</p>
+</li>
+<li>
+<p>It is an open source machine emulator and virtualizer.</p>
+</li>
+<li>
+<p>With the help of dynamic binary translation it can emulate a different machine&rsquo;s processor.</p>
+</li>
+<li>
+<p>For example, using QEMU an user can emulate an ARM board in their PC.</p>
+</li>
+<li>
+<p>By using binary translation it achieves good performance.</p>
+</li>
+<li>
+<p>It can use other hypervisors like Xen, KVM to use Hardware-assisted virtualization.</p>
+</li>
+<li>
+<p><strong>Features</strong></p>
+<ul>
+<li>QEMU can save and restore a virtual machine wit all the application running.</li>
+<li>Operating systems need not to be patched for running them in QEMU.</li>
+<li>Can emulate a lot different types of architectures.</li>
+<li>Uses special format for storing the virtual machine qcow or qcow2. This formats only take up as much disk space as the guest OS does.</li>
+<li>Allows the host and guest machine to communicate with integrating services like SMB server.</li>
+<li>Can also support different image formats like <code>.vdi</code>, <code>.vmdk</code>, etc.</li>
+</ul>
+</li>
+</ul>
+<h2 id="libvirt">Libvirt</h2>
+<ul>
+<li>
+<p>Libvirt is an Open source API, daemon that provides a way to manage virtual machines.</p>
+</li>
+<li>
+<p>It can be used to manage KVM/QEMU, Xen, LXC, etc.</p>
+</li>
+<li>
+<p><strong>Features</strong></p>
+<ul>
+<li>VM Management</li>
+<li>Remote machine support</li>
+<li>Storage management</li>
+<li>Network interface management</li>
+<li>Virtual NAT and Route based networking</li>
+</ul>
+</li>
+<li>
+<p>There are different user interfaces that use libvirt Virtual Machine Manager, GNOME Boxes, virsh, oVirt, etc.</p>
+</li>
+</ul>
+<h2 id="differences-between-qemu-kvm-and-libvirt">Differences between QEMU, KVM and Libvirt</h2>
+<ul>
+<li>
+<p>QEMU and KVM both act as a hypervisor.</p>
+</li>
+<li>
+<p>QEMU runs slower when the system doesn&rsquo;t have hardware virtualization. To resolve this we use KVM. KVM helps QEMU access the virtualization features on different architectures. KVM also adds acceleration feature to the QEMU process.</p>
+</li>
+<li>
+<p>Libvirt is a simple virtualization library. It is used to manage KVM and QEMU. It is effective and can handle a lot of hypervisors together. It consists of three utilities: API library, a daemon (libvirtd) and a command line tool (virsh).</p>
+</li>
+<li>
+<p>So in-short:</p>
+<ul>
+<li>QEMU - Hypervisor</li>
+<li>KVM - Accelerating agent</li>
+<li>Libvirt - A Management library</li>
+</ul>
+</li>
+</ul>
+<h2 id="continued">Continued</h2>
+<p>In the next post, we will be looking into virt-install to create VM and virsh to manage them.</p>
+]]></content>
+        </item>
         
         <item>
             <title>My Browser Configuration</title>

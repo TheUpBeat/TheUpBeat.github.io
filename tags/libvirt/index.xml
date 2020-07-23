@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Libvirt on VULNIX</title>
+    <link>https://theupbeat.github.io/tags/libvirt/</link>
+    <description>Recent content in Libvirt on VULNIX</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Thu, 23 Jul 2020 18:00:00 +0530</lastBuildDate>
+    
+	<atom:link href="https://theupbeat.github.io/tags/libvirt/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Creating and Managing Virtual Machines using Libvirt</title>
+      <link>https://theupbeat.github.io/posts/vm_2/</link>
+      <pubDate>Thu, 23 Jul 2020 18:00:00 +0530</pubDate>
+      
+      <guid>https://theupbeat.github.io/posts/vm_2/</guid>
+      <description>As we have seen a little into KVM/QEMU, Libvirt in the previous post, this post will demonstrate how to create, manage and remove virtual machines.
+ Note
+I use Void Linux as my base operating system (recently hoped from Manjaro), so the commands will be according to it. But most of the packages are some with similar or different names.
+ Before installing packages for KVM/QEMU, we need to check for KVM support.</description>
+    </item>
+    
+    <item>
+      <title>KVM, QEMU, Libvirt</title>
+      <link>https://theupbeat.github.io/posts/vm_1/</link>
+      <pubDate>Thu, 23 Jul 2020 15:00:00 +0530</pubDate>
+      
+      <guid>https://theupbeat.github.io/posts/vm_1/</guid>
+      <description>Introduction I was looking into virtualization in Linux systems. As we know Linux has arsenal of tools in its back-pocket. It did have something up its sleeve KVM, QEMU, Libvirt. And there a lot of other 3rd party options like VMWare, VirtulBox to name some.
+Its interesting that KVM is a kernel module in the Linux system, which helps in getting native-like performance in the virtual machine. So we will be looking into tweaking KVM, QEMU, Libvirt to our convenience and usage.</description>
+    </item>
+    
+  </channel>
+</rss>
